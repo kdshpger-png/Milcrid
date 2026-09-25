@@ -1,0 +1,240 @@
+{
+  "linuxApps": [
+    {
+      "name": "Firefox",
+      "exec": "/snap/bin/firefox",
+      "icon": "/snap/firefox/current/default256.png"
+    },
+    {
+      "name": "LibreOffice Writer",
+      "exec": "libreoffice --writer",
+      "icon": "/usr/share/icons/hicolor/256x256/apps/libreoffice-writer.png"
+    },
+    {
+      "name": "Thunderbird Mail",
+      "exec": "/snap/bin/thunderbird",
+      "pfad": "/var/lib/snapd/desktop/applications/thunderbird_thunderbird.desktop",
+      "icon": "/snap/thunderbird/current/meta/gui/thunderbird.png"
+    },
+    {
+      "exec": "libreoffice --draw",
+      "name": "LibreOffice Draw",
+      "icon": "/usr/share/icons/hicolor/256x256/apps/libreoffice-draw.png",
+      "pfad": "/usr/share/applications/libreoffice-draw.desktop"
+    },
+    {
+      "exec": "libreoffice --math",
+      "name": "LibreOffice Math",
+      "icon": "/usr/share/icons/hicolor/256x256/apps/libreoffice-math.png",
+      "pfad": "/usr/share/applications/libreoffice-math.desktop"
+    },
+    {
+      "name": "LibreOffice Impress",
+      "exec": "libreoffice --impress",
+      "pfad": "/usr/share/applications/libreoffice-impress.desktop",
+      "icon": "/usr/share/icons/hicolor/256x256/apps/libreoffice-impress.png"
+    },
+    {
+      "name": "LibreOffice Calc",
+      "exec": "libreoffice --calc",
+      "pfad": "/usr/share/applications/libreoffice-calc.desktop",
+      "icon": "/usr/share/icons/hicolor/256x256/apps/libreoffice-calc.png"
+    },
+    {
+      "name": "LibreOffice Base",
+      "exec": "libreoffice --base",
+      "pfad": "/usr/share/applications/libreoffice-base.desktop",
+      "icon": "/usr/share/icons/hicolor/256x256/apps/libreoffice-base.png"
+    },
+    {
+      "name": "LibreOffice",
+      "exec": "libreoffice",
+      "pfad": "/usr/share/applications/libreoffice-startcenter.desktop",
+      "icon": "/usr/share/icons/hicolor/256x256/apps/libreoffice-startcenter.png"
+    },
+    {
+      "name": "kitty",
+      "exec": "kitty",
+      "pfad": "/usr/share/applications/kitty.desktop",
+      "icon": "/usr/share/icons/hicolor/256x256/apps/kitty.png"
+    },
+    {
+      "name": "nvtop",
+      "exec": "nvtop",
+      "pfad": "/usr/share/applications/nvtop.desktop",
+      "icon": "/usr/share/icons/nvtop.svg"
+    }
+  ],
+  "seitenButtons": {
+    "s1": {
+      "typ": "milcrid",
+      "id": "terminplaner",
+      "name": "Milcrid Termine"
+    },
+    "s7": {
+      "typ": "milcrid",
+      "id": "uhr",
+      "name": "Milcrid Uhr"
+    },
+    "s8": {
+      "typ": "milcrid",
+      "id": "video",
+      "name": "Milcrid Video"
+    },
+    "s9": {
+      "typ": "milcrid",
+      "id": "editor",
+      "name": "Milcrid Editor"
+    },
+    "s13": {
+      "typ": "milcrid",
+      "id": "papierkorb",
+      "name": "Milcrid Papierkorb"
+    },
+    "s12": {
+      "typ": "milcrid",
+      "id": "handbuch",
+      "name": "Milcrid Handbuch"
+    },
+    "s10": {
+      "typ": "milcrid",
+      "id": "notizen",
+      "name": "Milcrid Notizen"
+    },
+    "s11": {
+      "typ": "milcrid-hub",
+      "id": "apps",
+      "name": "Meine Apps"
+    },
+    "s2": {
+      "typ": "milcrid-hub",
+      "id": "lokaleki",
+      "name": "Lokale KI"
+    },
+    "s3": {
+      "typ": "milcrid-hub",
+      "id": "apiki",
+      "name": "API KI"
+    },
+    "s4": {
+      "typ": "linux",
+      "exec": "/snap/bin/firefox",
+      "name": "Firefox",
+      "icon": "/snap/firefox/current/default256.png"
+    },
+    "s5": {
+      "typ": "linux",
+      "exec": "libreoffice --writer",
+      "name": "LibreOffice Writer",
+      "icon": "/usr/share/icons/hicolor/256x256/apps/libreoffice-writer.png"
+    },
+    "s6": {
+      "typ": "linux",
+      "exec": "/snap/bin/thunderbird",
+      "name": "Thunderbird Mail",
+      "icon": "/snap/thunderbird/current/meta/gui/thunderbird.png",
+      "pfad": "/var/lib/snapd/desktop/applications/thunderbird_thunderbird.desktop"
+    }
+  },
+  "milcridApps": [
+    {
+      "id": "uhr",
+      "name": "Milcrid Uhr",
+      "iconPfad": "@HOME@/Milcrid-App/Milcrid Apps/uhr/uhr-icon.svg"
+    },
+    {
+      "id": "rechner",
+      "name": "Milcrid Rechner",
+      "iconPfad": "@HOME@/Milcrid-App/Milcrid Apps/rechner/rechner-icon.svg"
+    },
+    {
+      "id": "kalender",
+      "name": "Milcrid Kalender",
+      "iconPfad": "@HOME@/Milcrid-App/Milcrid Apps/kalender/kalender-icon.svg"
+    },
+    {
+      "id": "terminplaner",
+      "name": "Milcrid Termine",
+      "iconPfad": "@HOME@/Milcrid-App/Milcrid Apps/terminplaner/terminplaner-icon.svg"
+    },
+    {
+      "id": "notizen",
+      "name": "Milcrid Notizen",
+      "iconPfad": "@HOME@/Milcrid-App/Milcrid Apps/notizen/notizen-icon.svg"
+    },
+    {
+      "id": "onlinechat",
+      "name": "Milcrid Online KI",
+      "iconPfad": "@HOME@/Milcrid-App/Milcrid Apps/onlinechat/onlinechat-icon.svg"
+    },
+    {
+      "id": "skizze",
+      "name": "Milcrid Skizze",
+      "iconPfad": "@HOME@/Milcrid-App/Milcrid Apps/skizze/skizze-icon.svg"
+    },
+    {
+      "id": "editor",
+      "name": "Milcrid Editor",
+      "iconPfad": "@HOME@/Milcrid-App/Milcrid Apps/editor/editor-icon.svg"
+    },
+    {
+      "id": "bild",
+      "name": "Milcrid Bildbetrachter",
+      "iconPfad": "@HOME@/Milcrid-App/Milcrid Apps/bild/bild-icon.svg"
+    },
+    {
+      "id": "video",
+      "name": "Milcrid Video",
+      "iconPfad": "@HOME@/Milcrid-App/Milcrid Apps/video/video-icon.svg"
+    },
+    {
+      "id": "handbuch",
+      "name": "Milcrid Handbuch",
+      "iconPfad": "@HOME@/Milcrid-App/Milcrid Apps/handbuch/handbuch-icon.svg"
+    }
+  ],
+  "zusatzSlotsLinks": [],
+  "zusatzSlotsRechts": [],
+  "zusatzZaehler": 782,
+  "hubReihenfolgen": {
+    "milcridHub": [
+      "schreibtisch",
+      "dateimanager",
+      "profilmanager",
+      "lokaleki",
+      "apiki",
+      "apps",
+      "extras",
+      "cloud",
+      "einstellungen",
+      "c26so",
+      "update",
+      "systemtest",
+      "system",
+      "linuxpython"
+    ],
+    "profilmanager": [
+      "profilNutzerBtn",
+      "profilKiBtn",
+      "profilAlleBtn",
+      "profilErstellenBtn"
+    ],
+    "lokaleki": [
+      "promptCharakterBtn",
+      "systemPromptBtn",
+      "toolboxListeBtn",
+      "toolboxSystemBtn",
+      "kiTestBtn",
+      "sandboxBtn"
+    ],
+    "portal": [
+      "schriftBtn",
+      "farbeBtn",
+      "buttonsBtn",
+      "groesseBtn",
+      "portalSuchenBtn"
+    ]
+  },
+  "seitenanzahlAktuell": 7,
+  "goldAnzahlAktuell": 2
+}

@@ -1,0 +1,26 @@
+<svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b3f9a"/>
+      <stop offset="55%" stop-color="#062a72"/>
+      <stop offset="100%" stop-color="#021231"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fff7c2"/>
+      <stop offset="25%" stop-color="#ffe27a"/>
+      <stop offset="45%" stop-color="#f6c33b"/>
+      <stop offset="65%" stop-color="#b27a08"/>
+      <stop offset="80%" stop-color="#f4c447"/>
+      <stop offset="100%" stop-color="#b88615"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="128" height="128" rx="28" fill="url(#bg)"/>
+
+  <!-- Bildbetrachter: goldener Rahmen, Berge und Sonne -->
+  <rect x="18" y="26" width="92" height="76" rx="9" fill="url(#gold)"/>
+  <rect x="25" y="33" width="78" height="62" rx="5" fill="#0b1a3a"/>
+  <circle cx="84" cy="50" r="8" fill="#ffe27a"/>
+  <path d="M25 95 L52 60 L70 82 L80 72 L103 95 Z" fill="#33a1ff"/>
+  <path d="M25 95 L52 60 L63 74 L45 95 Z" fill="#1f6fd1"/>
+</svg>

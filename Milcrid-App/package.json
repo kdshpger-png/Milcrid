@@ -1,0 +1,13 @@
+{
+  "name": "milcrid-app",
+  "version": "1.0.0",
+  "description": "Milcrid Desktop-App - eigenes Fenster fuer das Milcrid-Portal",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron ."
+  },
+  "dependencies": {
+    "electron": "43.2.0"
+  }
+}

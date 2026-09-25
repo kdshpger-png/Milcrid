@@ -1,0 +1,38 @@
+[
+  {
+    "muster": "dokumentwiederherstellung|wiederherstellungsdaten|dokument wiederherstellen",
+    "name": "LibreOffice: alte Sitzung wiederherstellen?",
+    "vorschlag": "abbrechen",
+    "warum": "Eine alte Sitzung wiederherstellen entscheidet Klaus selbst - es kann ein Dokument von gestern sein.",
+    "anzahl": 0,
+    "zuletzt": "",
+    "angelegt": "2026-09-20 01:44"
+  },
+  {
+    "muster": "vor dem schließen speichern|änderungen.*speichern\\?|save changes|dokument speichern",
+    "name": "Programm fragt: Änderungen speichern?",
+    "vorschlag": "nichts",
+    "warum": "Ob ein Text gespeichert wird, darf nur Klaus entscheiden - hier geht sonst Arbeit verloren.",
+    "anzahl": 0,
+    "zuletzt": "",
+    "angelegt": "2026-09-20 01:44"
+  },
+  {
+    "muster": "update|aktualisierung|jetzt neu starten|neustart erforderlich",
+    "name": "Update-Frage",
+    "vorschlag": "abbrechen",
+    "warum": "Updates kommen immer wieder. Mitten in der Arbeit heißt die Antwort meistens 'später'.",
+    "angelegt": "2026-09-20 01:44",
+    "anzahl": 0,
+    "zuletzt": ""
+  },
+  {
+    "muster": "wirklich löschen|endgültig löschen|papierkorb leeren",
+    "name": "Löschen-Nachfrage",
+    "vorschlag": "abbrechen",
+    "warum": "Löschen ist nicht rückgängig zu machen.",
+    "angelegt": "2026-09-20 01:44",
+    "anzahl": 0,
+    "zuletzt": ""
+  }
+]

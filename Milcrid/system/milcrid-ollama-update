@@ -1,0 +1,91 @@
+#!/bin/bash
+# milcrid-ollama-update - Ollama per Knopf aus dem Milcrid-Portal aktualisieren (Update > KI).
+#
+# Liegt root-eigen unter /usr/local/sbin und darf von Milcrid ohne Passwort gestartet werden
+# (/etc/sudoers.d/milcrid-ollama). Absichtlich KEIN "curl ollama.com/install.sh | sh":
+# das offizielle Skript ueberschreibt jedes Mal den Systemdienst, loescht die alte Version
+# ersatzlos und holt immer "die neueste". Dieses Skript macht nur:
+#   aktualisieren <x.y.z>  genau diese Version laden, alte sichern, tauschen, pruefen -
+#                          antwortet die neue nicht, automatisch zurueck zur alten
+#   zurueck                die gesicherte Version wieder einspielen
+# Alles wird zusaetzlich an /var/log/milcrid-ollama-update.log angehaengt.
+# (Opus fuer Klaus, 14.09.2026)
+
+set -uo pipefail
+export LANG=C.UTF-8
+BIN=/usr/local/bin/ollama
+LIB=/usr/local/lib/ollama
+SICHERUNG=/var/backups/milcrid-ollama
+LOG=/var/log/milcrid-ollama-update.log
+
+schreib() { echo "$(date '+%Y-%m-%d %H:%M:%S') $*" | tee -a "$LOG"; }
+
+laeuft_version() {   # Version, die der laufende Dienst meldet (leer, wenn er nicht antwortet)
+  curl -sf -m 3 http://127.0.0.1:11434/api/version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1
+}
+
+warte_auf() {        # warte_auf <version>: bis zu 60 s, bis der Dienst genau diese Version meldet
+  for _ in $(seq 60); do
+    [ "$(laeuft_version)" = "$1" ] && return 0
+    sleep 1
+  done
+  return 1
+}
+
+zurueckspielen() {
+  if [ ! -x "$SICHERUNG/ollama" ] || [ ! -d "$SICHERUNG/lib" ]; then
+    schreib "FEHLER: keine Sicherung vorhanden"; return 1
+  fi
+  local alt; alt=$(cat "$SICHERUNG/version" 2>/dev/null)
+  schreib "Spiele gesicherte Version $alt zurueck"
+  systemctl stop ollama
+  install -o0 -g0 -m755 "$SICHERUNG/ollama" "$BIN"
+  rm -rf "$LIB" && cp -a "$SICHERUNG/lib" "$LIB"
+  systemctl start ollama
+  if warte_auf "$alt"; then schreib "OK: Ollama $alt laeuft wieder"; return 0; fi
+  schreib "FEHLER: Ollama antwortet nach dem Zurueckspielen nicht"; return 1
+}
+
+case "${1:-}" in
+  aktualisieren)
+    NEU="${2:-}"
+    if ! [[ "$NEU" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then schreib "FEHLER: ungueltige Version '$NEU'"; exit 2; fi
+    ALT=$(laeuft_version)
+    [ -n "$ALT" ] || ALT=$("$BIN" --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | tail -1)
+    if [ "$ALT" = "$NEU" ]; then schreib "Ollama $NEU ist schon installiert"; exit 0; fi
+    schreib "START Ollama $ALT -> $NEU"
+    TMP=$(mktemp -d /var/tmp/milcrid-ollama.XXXXXX)
+    trap 'rm -rf "$TMP"' EXIT
+    if ! curl -fL --retry 3 -sS -o "$TMP/ollama.tar.zst" \
+         "https://ollama.com/download/ollama-linux-amd64.tar.zst?version=$NEU"; then
+      schreib "FEHLER: Download fehlgeschlagen"; exit 3
+    fi
+    mkdir -p "$TMP/neu"
+    if ! zstd -dc "$TMP/ollama.tar.zst" | tar -xf - -C "$TMP/neu"; then
+      schreib "FEHLER: Entpacken fehlgeschlagen"; exit 3
+    fi
+    if [ ! -x "$TMP/neu/bin/ollama" ] || [ ! -d "$TMP/neu/lib/ollama" ]; then
+      schreib "FEHLER: Paket hat nicht den erwarteten Aufbau (bin/ollama, lib/ollama)"; exit 3
+    fi
+    if ! "$TMP/neu/bin/ollama" --version 2>&1 | grep -q "$NEU"; then
+      schreib "FEHLER: heruntergeladene Datei meldet nicht Version $NEU"; exit 3
+    fi
+    schreib "Sichere Ollama $ALT nach $SICHERUNG"
+    rm -rf "$SICHERUNG" && mkdir -p "$SICHERUNG"
+    cp -a "$BIN" "$SICHERUNG/ollama" && cp -a "$LIB" "$SICHERUNG/lib" && echo "$ALT" > "$SICHERUNG/version"
+    schreib "Tausche und starte neu"
+    systemctl stop ollama
+    install -o0 -g0 -m755 "$TMP/neu/bin/ollama" "$BIN"
+    rm -rf "$LIB" && cp -a "$TMP/neu/lib/ollama" "$LIB"
+    systemctl start ollama
+    if warte_auf "$NEU"; then schreib "OK: Ollama $NEU laeuft (Sicherung: $ALT)"; exit 0; fi
+    schreib "FEHLER: Ollama $NEU antwortet nicht - automatisch zurueck zu $ALT"
+    zurueckspielen; exit 4
+    ;;
+  zurueck)
+    zurueckspielen; exit $?
+    ;;
+  *)
+    echo "Aufruf: milcrid-ollama-update aktualisieren <x.y.z> | zurueck"; exit 2
+    ;;
+esac

@@ -1,0 +1,1024 @@
+{
+  "_meta": {
+    "aktiv": true
+  },
+  "art_gestaffelt_nur_themen": {
+    "anzahl": 0,
+    "arg_string": "art=\"gestaffelt\", nur=\"themen\"",
+    "formulierungen": [
+      "themen gestaffelt",
+      "staffle die themen",
+      "themen staffeln",
+      "zeige themen gestaffelt",
+      "ordne themen gestaffelt an"
+    ],
+    "werkzeug": "arrange_windows",
+    "zuletzt": ""
+  },
+  "art_nebeneinander_nur_themen": {
+    "anzahl": 0,
+    "arg_string": "art=\"nebeneinander\", nur=\"themen\"",
+    "formulierungen": [
+      "themen nebeneinander",
+      "zeige themen nebeneinander",
+      "ordne themen nebeneinander an"
+    ],
+    "werkzeug": "arrange_windows",
+    "zuletzt": ""
+  },
+  "art_untereinander_nur_themen": {
+    "anzahl": 0,
+    "arg_string": "art=\"untereinander\", nur=\"themen\"",
+    "formulierungen": [
+      "themen untereinander",
+      "zeige themen untereinander",
+      "ordne themen untereinander an"
+    ],
+    "werkzeug": "arrange_windows",
+    "zuletzt": ""
+  },
+  "fenster_gestaffelt": {
+    "anzahl": 0,
+    "arg_string": "art=\"gestaffelt\"",
+    "formulierungen": [
+      "fenster gestaffelt",
+      "zeige fenster gestaffelt",
+      "ordne fenster gestaffelt an",
+      "fenster staffeln",
+      "zeige fenster staffeln",
+      "ordne fenster staffeln an"
+    ],
+    "werkzeug": "arrange_windows",
+    "zuletzt": ""
+  },
+  "fenster_nebeneinander": {
+    "anzahl": 0,
+    "arg_string": "art=\"nebeneinander\"",
+    "formulierungen": [
+      "fenster nebeneinander",
+      "zeige fenster nebeneinander",
+      "ordne fenster nebeneinander an"
+    ],
+    "werkzeug": "arrange_windows",
+    "zuletzt": ""
+  },
+  "fenster_untereinander": {
+    "anzahl": 0,
+    "arg_string": "art=\"untereinander\"",
+    "formulierungen": [
+      "fenster untereinander",
+      "zeige fenster untereinander",
+      "ordne fenster untereinander an"
+    ],
+    "werkzeug": "arrange_windows",
+    "zuletzt": ""
+  },
+  "fenster_vorlesen": {
+    "anzahl": 0,
+    "arg_string": "",
+    "formulierungen": [
+      "was steht in dem Fenster",
+      "was steht da",
+      "lies mir das Fenster vor",
+      "lies das Fenster vor",
+      "lies mir vor was da steht",
+      "was will das Fenster",
+      "was steht in der Meldung"
+    ],
+    "werkzeug": "fenster_vorlesen",
+    "zuletzt": ""
+  },
+  "firefox_maximieren": {
+    "anzahl": 0,
+    "arg_string": "name=\"Firefox\"",
+    "formulierungen": [
+      "Firefox maximieren"
+    ],
+    "werkzeug": "maximize_window",
+    "zuletzt": ""
+  },
+  "icon_fenster_oeffnen": {
+    "anzahl": 0,
+    "arg_string": "name=\"Icon Fenster\"",
+    "formulierungen": [
+      "öffne Icon Fenster",
+      "Icon Fenster öffnen",
+      "zeige Icon Fenster",
+      "Icon Fenster zeigen",
+      "hol das Icon Fenster",
+      "öffne Icon Leiste",
+      "öffne Iconfenster"
+    ],
+    "werkzeug": "maximize_window",
+    "zuletzt": ""
+  },
+  "ja_brich_ab": {
+    "anzahl": 0,
+    "arg_string": "",
+    "formulierungen": [
+      "ja brich ab",
+      "brich ab",
+      "ja abbrechen",
+      "abbrechen bitte",
+      "brich das ab",
+      "dann brich ab"
+    ],
+    "werkzeug": "dialog_abbrechen",
+    "zuletzt": ""
+  },
+  "maximiere_uhr": {
+    "anzahl": 0,
+    "arg_string": "name=\"Uhr\"",
+    "formulierungen": [
+      "maximiere Uhr"
+    ],
+    "werkzeug": "maximize_window",
+    "zuletzt": ""
+  },
+  "milcrid_bildbetrachter_oeffnen": {
+    "anzahl": 0,
+    "arg_string": "name=\"Milcrid Bildbetrachter\"",
+    "formulierungen": [
+      "öffne Bildbetrachter",
+      "öffne Milcrid Bildbetrachter",
+      "Bildbetrachter öffnen"
+    ],
+    "werkzeug": "open_app",
+    "zuletzt": ""
+  },
+  "milcrid_editor_oeffnen": {
+    "anzahl": 0,
+    "arg_string": "name=\"Milcrid Editor\"",
+    "formulierungen": [
+      "öffne Editor",
+      "öffne Milcrid Editor",
+      "Editor öffnen",
+      "starte Editor"
+    ],
+    "werkzeug": "open_app",
+    "zuletzt": ""
+  },
+  "milcrid_handbuch_oeffnen": {
+    "anzahl": 0,
+    "arg_string": "name=\"Milcrid Handbuch\"",
+    "formulierungen": [
+      "öffne Handbuch",
+      "öffne Milcrid Handbuch",
+      "Handbuch öffnen",
+      "zeig mir das Handbuch",
+      "öffne Bedienungsanleitung"
+    ],
+    "werkzeug": "open_app",
+    "zuletzt": ""
+  },
+  "milcrid_papierkorb_oeffnen": {
+    "anzahl": 0,
+    "arg_string": "name=\"Milcrid Papierkorb\"",
+    "formulierungen": [
+      "öffne Papierkorb",
+      "öffne den Papierkorb",
+      "öffne Milcrid Papierkorb",
+      "Papierkorb öffnen",
+      "zeig mir den Papierkorb"
+    ],
+    "werkzeug": "open_app",
+    "zuletzt": ""
+  },
+  "milcrid_video_oeffnen": {
+    "anzahl": 0,
+    "arg_string": "name=\"Milcrid Video\"",
+    "formulierungen": [
+      "öffne Milcrid Video",
+      "Milcrid Video öffnen",
+      "öffne Videoplayer"
+    ],
+    "werkzeug": "open_app",
+    "zuletzt": ""
+  },
+  "minimiere_uhr": {
+    "anzahl": 0,
+    "arg_string": "name=\"Uhr\"",
+    "formulierungen": [
+      "minimiere Uhr"
+    ],
+    "werkzeug": "minimize_window",
+    "zuletzt": ""
+  },
+  "name_alle_themen": {
+    "anzahl": 0,
+    "arg_string": "name=\"Alle Themen\"",
+    "formulierungen": [
+      "öffne alle themen",
+      "alle themen öffnen",
+      "themen öffnen"
+    ],
+    "werkzeug": "open_theme",
+    "zuletzt": ""
+  },
+  "name_kalender": {
+    "anzahl": 0,
+    "arg_string": "name=\"Kalender\"",
+    "formulierungen": [
+      "schließe kalender",
+      "kalender schließen",
+      "mach kalender zu"
+    ],
+    "werkzeug": "close_window",
+    "zuletzt": ""
+  },
+  "name_rechner": {
+    "anzahl": 0,
+    "arg_string": "name=\"Rechner\"",
+    "formulierungen": [
+      "schließe rechner",
+      "rechner schließen",
+      "mach rechner zu"
+    ],
+    "werkzeug": "close_window",
+    "zuletzt": ""
+  },
+  "name_themen_manager_2": {
+    "anzahl": 0,
+    "arg_string": "name=\"Themen Manager\"",
+    "formulierungen": [
+      "öffne themen manager",
+      "themen manager öffnen",
+      "zeig themen manager"
+    ],
+    "werkzeug": "open_section",
+    "zuletzt": ""
+  },
+  "name_uhr": {
+    "anzahl": 0,
+    "arg_string": "name=\"Uhr\"",
+    "formulierungen": [
+      "schließe uhr",
+      "uhr schließen",
+      "mach uhr zu"
+    ],
+    "werkzeug": "close_window",
+    "zuletzt": ""
+  },
+  "rechner_maximieren": {
+    "anzahl": 0,
+    "arg_string": "name=\"Rechner\"",
+    "formulierungen": [
+      "Rechner maximieren"
+    ],
+    "werkzeug": "maximize_window",
+    "zuletzt": ""
+  },
+  "schließe_alle_fenster": {
+    "anzahl": 0,
+    "arg_string": "",
+    "formulierungen": [
+      "schließe alle fenster",
+      "alle fenster schließen",
+      "alle fenster zu",
+      "schließe Fenster",
+      "alle Fenster aus"
+    ],
+    "werkzeug": "close_all_windows",
+    "zuletzt": ""
+  },
+  "schließe_alle_fenster_computer_pc_neusta": {
+    "anzahl": 0,
+    "arg_string": "name=\"alle\"",
+    "formulierungen": [
+      "schließe alle Fenster. Computer, PC Neustart. Computer, ja"
+    ],
+    "werkzeug": "close_window",
+    "zuletzt": ""
+  },
+  "schließe_alle_programme": {
+    "anzahl": 0,
+    "arg_string": "",
+    "formulierungen": [
+      "schließe alle programme",
+      "alle programme schließen",
+      "schließe alle apps",
+      "alle apps zu"
+    ],
+    "werkzeug": "close_all_apps",
+    "zuletzt": ""
+  },
+  "schließe_chatfenster": {
+    "anzahl": 0,
+    "arg_string": "zustand=\"zu\"",
+    "formulierungen": [
+      "schließe chatfenster",
+      "chatfenster zu",
+      "chat zu",
+      "blende chat aus"
+    ],
+    "werkzeug": "set_chat_window",
+    "zuletzt": ""
+  },
+  "schließe_firefox": {
+    "anzahl": 0,
+    "arg_string": "name=\"Firefox\"",
+    "formulierungen": [
+      "schließe firefox",
+      "firefox schließen",
+      "mach firefox zu",
+      "schließe ff",
+      "ff schließen",
+      "mach ff zu",
+      "schließe browser",
+      "browser schließen",
+      "mach browser zu"
+    ],
+    "werkzeug": "close_app",
+    "zuletzt": ""
+  },
+  "schließe_ip_wächter": {
+    "anzahl": 0,
+    "arg_string": "name=\"IP-Wächter\"",
+    "formulierungen": [
+      "schließe ip-wächter",
+      "ip-wächter schließen",
+      "mach ip-wächter zu",
+      "schließe wächter",
+      "wächter schließen",
+      "mach wächter zu"
+    ],
+    "werkzeug": "close_app",
+    "zuletzt": ""
+  },
+  "schließe_kitty": {
+    "anzahl": 0,
+    "arg_string": "name=\"kitty\"",
+    "formulierungen": [
+      "schließe kitty",
+      "kitty schließen",
+      "mach kitty zu",
+      "schließe terminal",
+      "terminal schließen",
+      "mach terminal zu"
+    ],
+    "werkzeug": "close_app",
+    "zuletzt": ""
+  },
+  "schließe_libreoffice": {
+    "anzahl": 0,
+    "arg_string": "name=\"LibreOffice\"",
+    "formulierungen": [
+      "libreoffice schließen",
+      "mach libreoffice zu"
+    ],
+    "werkzeug": "close_app",
+    "zuletzt": ""
+  },
+  "schließe_libreoffice_base": {
+    "anzahl": 0,
+    "arg_string": "name=\"LibreOffice Base\"",
+    "formulierungen": [
+      "schließe libreoffice base",
+      "libreoffice base schließen",
+      "mach libreoffice base zu"
+    ],
+    "werkzeug": "close_app",
+    "zuletzt": ""
+  },
+  "schließe_libreoffice_calc": {
+    "anzahl": 0,
+    "arg_string": "name=\"LibreOffice Calc\"",
+    "formulierungen": [
+      "schließe libreoffice calc",
+      "libreoffice calc schließen",
+      "mach libreoffice calc zu",
+      "schließe Office Calc"
+    ],
+    "werkzeug": "close_app",
+    "zuletzt": ""
+  },
+  "schließe_libreoffice_draw": {
+    "anzahl": 0,
+    "arg_string": "name=\"LibreOffice Draw\"",
+    "formulierungen": [
+      "schließe libreoffice draw",
+      "libreoffice draw schließen",
+      "mach libreoffice draw zu"
+    ],
+    "werkzeug": "close_app",
+    "zuletzt": ""
+  },
+  "schließe_libreoffice_impress": {
+    "anzahl": 0,
+    "arg_string": "name=\"LibreOffice Impress\"",
+    "formulierungen": [
+      "schließe libreoffice impress",
+      "libreoffice impress schließen",
+      "mach libreoffice impress zu"
+    ],
+    "werkzeug": "close_app",
+    "zuletzt": ""
+  },
+  "schließe_libreoffice_math": {
+    "anzahl": 0,
+    "arg_string": "name=\"LibreOffice Math\"",
+    "formulierungen": [
+      "schließe libreoffice math",
+      "libreoffice math schließen",
+      "mach libreoffice math zu"
+    ],
+    "werkzeug": "close_app",
+    "zuletzt": ""
+  },
+  "schließe_libreoffice_writer": {
+    "anzahl": 0,
+    "arg_string": "name=\"LibreOffice Writer\"",
+    "formulierungen": [
+      "schließe libreoffice writer",
+      "libreoffice writer schließen",
+      "mach libreoffice writer zu",
+      "schließe libreoffice weiter"
+    ],
+    "werkzeug": "close_app",
+    "zuletzt": ""
+  },
+  "schließe_milcrid_termine": {
+    "anzahl": 0,
+    "arg_string": "name=\"Milcrid Termine\"",
+    "formulierungen": [
+      "schließe Termine",
+      "Termine schließen",
+      "mach Termine zu",
+      "schließe Terminplaner",
+      "Terminplaner schließen"
+    ],
+    "werkzeug": "close_window",
+    "zuletzt": ""
+  },
+  "schließe_profil": {
+    "anzahl": 0,
+    "arg_string": "name=\"Profil\"",
+    "formulierungen": [
+      "schließe Profil"
+    ],
+    "werkzeug": "close_window",
+    "zuletzt": ""
+  },
+  "schließe_thunderbird": {
+    "anzahl": 0,
+    "arg_string": "name=\"Thunderbird Mail\"",
+    "formulierungen": [
+      "schließe thunderbird",
+      "thunderbird schließen",
+      "mach thunderbird zu",
+      "schließe mail",
+      "mail schließen",
+      "mach mail zu"
+    ],
+    "werkzeug": "close_app",
+    "zuletzt": ""
+  },
+  "schließe_vlc": {
+    "anzahl": 0,
+    "arg_string": "name=\"VLC media player\"",
+    "formulierungen": [
+      "schließe vlc",
+      "vlc schließen",
+      "mach vlc zu"
+    ],
+    "werkzeug": "close_app",
+    "zuletzt": ""
+  },
+  "uhr_maximieren": {
+    "anzahl": 0,
+    "arg_string": "name=\"Milcrid Uhr\"",
+    "formulierungen": [
+      "Uhr maximieren"
+    ],
+    "werkzeug": "maximize_window",
+    "zuletzt": ""
+  },
+  "zurück": {
+    "anzahl": 0,
+    "arg_string": "",
+    "formulierungen": [
+      "zurück",
+      "geh zurück",
+      "eine ebene zurück"
+    ],
+    "werkzeug": "go_back",
+    "zuletzt": ""
+  },
+  "öffne_base": {
+    "anzahl": 0,
+    "arg_string": "name=\"LibreOffice Base\"",
+    "formulierungen": [
+      "öffne base",
+      "base öffnen",
+      "mach base auf",
+      "starte base",
+      "zeig base",
+      "öffne libreoffice base",
+      "libreoffice base öffnen",
+      "mach libreoffice base auf",
+      "starte libreoffice base",
+      "zeig libreoffice base",
+      "öffne datenbank",
+      "datenbank öffnen",
+      "mach datenbank auf",
+      "starte datenbank",
+      "zeig datenbank"
+    ],
+    "werkzeug": "open_app",
+    "zuletzt": ""
+  },
+  "öffne_betriebssystem": {
+    "anzahl": 0,
+    "arg_string": "name=\"Betriebssystem\"",
+    "formulierungen": [
+      "öffne betriebssystem",
+      "betriebssystem öffnen",
+      "zeig betriebssystem",
+      "beöffne Betriebssystem"
+    ],
+    "werkzeug": "open_section",
+    "zuletzt": ""
+  },
+  "öffne_c26so": {
+    "anzahl": 0,
+    "arg_string": "name=\"C26SO\"",
+    "formulierungen": [
+      "öffne c26so",
+      "c26so öffnen",
+      "zeig c26so"
+    ],
+    "werkzeug": "open_section",
+    "zuletzt": ""
+  },
+  "öffne_calc": {
+    "anzahl": 0,
+    "arg_string": "name=\"LibreOffice Calc\"",
+    "formulierungen": [
+      "öffne calc",
+      "calc öffnen",
+      "mach calc auf",
+      "starte calc",
+      "zeig calc",
+      "öffne libreoffice calc",
+      "libreoffice calc öffnen",
+      "mach libreoffice calc auf",
+      "starte libreoffice calc",
+      "zeig libreoffice calc",
+      "öffne tabellen",
+      "tabellen öffnen",
+      "mach tabellen auf",
+      "starte tabellen",
+      "zeig tabellen",
+      "öffne tabellenkalkulation",
+      "tabellenkalkulation öffnen",
+      "mach tabellenkalkulation auf",
+      "starte tabellenkalkulation",
+      "zeig tabellenkalkulation"
+    ],
+    "werkzeug": "open_app",
+    "zuletzt": ""
+  },
+  "öffne_chatfenster": {
+    "anzahl": 0,
+    "arg_string": "zustand=\"auf\"",
+    "formulierungen": [
+      "öffne chatfenster",
+      "chatfenster auf",
+      "chat auf",
+      "blende chat ein"
+    ],
+    "werkzeug": "set_chat_window",
+    "zuletzt": ""
+  },
+  "öffne_datei_manager": {
+    "anzahl": 0,
+    "arg_string": "name=\"Datei Manager\"",
+    "formulierungen": [
+      "öffne datei manager",
+      "datei manager öffnen",
+      "zeig datei manager"
+    ],
+    "werkzeug": "open_section",
+    "zuletzt": ""
+  },
+  "öffne_draw": {
+    "anzahl": 0,
+    "arg_string": "name=\"LibreOffice Draw\"",
+    "formulierungen": [
+      "öffne draw",
+      "draw öffnen",
+      "mach draw auf",
+      "starte draw",
+      "zeig draw",
+      "öffne libreoffice draw",
+      "libreoffice draw öffnen",
+      "mach libreoffice draw auf",
+      "starte libreoffice draw",
+      "zeig libreoffice draw",
+      "öffne zeichenprogramm",
+      "zeichenprogramm öffnen",
+      "mach zeichenprogramm auf",
+      "starte zeichenprogramm",
+      "zeig zeichenprogramm"
+    ],
+    "werkzeug": "open_app",
+    "zuletzt": ""
+  },
+  "öffne_einstellungen": {
+    "anzahl": 0,
+    "arg_string": "name=\"Einstellungen\"",
+    "formulierungen": [
+      "öffne einstellungen",
+      "einstellungen öffnen",
+      "zeig einstellungen"
+    ],
+    "werkzeug": "open_section",
+    "zuletzt": ""
+  },
+  "öffne_extras": {
+    "anzahl": 0,
+    "arg_string": "name=\"Extras\"",
+    "formulierungen": [
+      "öffne extras",
+      "extras öffnen",
+      "zeig extras"
+    ],
+    "werkzeug": "open_section",
+    "zuletzt": ""
+  },
+  "öffne_firefox": {
+    "anzahl": 0,
+    "arg_string": "name=\"Firefox\"",
+    "formulierungen": [
+      "öffne firefox",
+      "firefox öffnen",
+      "mach firefox auf",
+      "starte firefox",
+      "zeig firefox",
+      "öffne ff",
+      "ff öffnen",
+      "mach ff auf",
+      "starte ff",
+      "zeig ff",
+      "öffne browser",
+      "browser öffnen",
+      "mach browser auf",
+      "starte browser",
+      "zeig browser",
+      "öffne das internet",
+      "das internet öffnen",
+      "mach das internet auf",
+      "starte das internet",
+      "zeig das internet",
+      "open firefox",
+      "open Firefox jetzt sofort"
+    ],
+    "werkzeug": "open_app",
+    "zuletzt": ""
+  },
+  "öffne_impress": {
+    "anzahl": 0,
+    "arg_string": "name=\"LibreOffice Impress\"",
+    "formulierungen": [
+      "öffne impress",
+      "impress öffnen",
+      "mach impress auf",
+      "starte impress",
+      "zeig impress",
+      "öffne libreoffice impress",
+      "libreoffice impress öffnen",
+      "mach libreoffice impress auf",
+      "starte libreoffice impress",
+      "zeig libreoffice impress",
+      "öffne präsentation",
+      "präsentation öffnen",
+      "mach präsentation auf",
+      "starte präsentation",
+      "zeig präsentation"
+    ],
+    "werkzeug": "open_app",
+    "zuletzt": ""
+  },
+  "öffne_ip_wächter": {
+    "anzahl": 0,
+    "arg_string": "name=\"IP-Wächter\"",
+    "formulierungen": [
+      "öffne ip-wächter",
+      "ip-wächter öffnen",
+      "mach ip-wächter auf",
+      "starte ip-wächter",
+      "zeig ip-wächter",
+      "öffne wächter",
+      "wächter öffnen",
+      "mach wächter auf",
+      "starte wächter",
+      "zeig wächter",
+      "öffne ipwächter",
+      "ipwächter öffnen",
+      "mach ipwächter auf",
+      "starte ipwächter",
+      "zeig ipwächter"
+    ],
+    "werkzeug": "open_app",
+    "zuletzt": ""
+  },
+  "öffne_kitty": {
+    "anzahl": 0,
+    "arg_string": "name=\"kitty\"",
+    "formulierungen": [
+      "öffne kitty",
+      "kitty öffnen",
+      "mach kitty auf",
+      "starte kitty",
+      "zeig kitty",
+      "öffne terminal",
+      "terminal öffnen",
+      "mach terminal auf",
+      "starte terminal",
+      "zeig terminal",
+      "öffne konsole",
+      "konsole öffnen",
+      "mach konsole auf",
+      "starte konsole",
+      "zeig konsole"
+    ],
+    "werkzeug": "open_app",
+    "zuletzt": ""
+  },
+  "öffne_libreoffice": {
+    "anzahl": 0,
+    "arg_string": "name=\"LibreOffice\"",
+    "formulierungen": [
+      "öffne libreoffice",
+      "libreoffice öffnen",
+      "mach libreoffice auf",
+      "starte libreoffice",
+      "zeig libreoffice"
+    ],
+    "werkzeug": "open_app",
+    "zuletzt": ""
+  },
+  "öffne_lokale_ki": {
+    "anzahl": 0,
+    "arg_string": "name=\"Lokale KI\"",
+    "formulierungen": [
+      "öffne lokale ki",
+      "lokale ki öffnen",
+      "zeig lokale ki"
+    ],
+    "werkzeug": "open_section",
+    "zuletzt": ""
+  },
+  "öffne_math": {
+    "anzahl": 0,
+    "arg_string": "name=\"LibreOffice Math\"",
+    "formulierungen": [
+      "öffne math",
+      "math öffnen",
+      "mach math auf",
+      "starte math",
+      "zeig math",
+      "öffne libreoffice math",
+      "libreoffice math öffnen",
+      "mach libreoffice math auf",
+      "starte libreoffice math",
+      "zeig libreoffice math",
+      "öffne formeln",
+      "formeln öffnen",
+      "mach formeln auf",
+      "starte formeln",
+      "zeig formeln"
+    ],
+    "werkzeug": "open_app",
+    "zuletzt": ""
+  },
+  "öffne_meine_apps": {
+    "anzahl": 0,
+    "arg_string": "name=\"Meine Apps\"",
+    "formulierungen": [
+      "öffne meine apps",
+      "meine apps öffnen",
+      "zeig meine apps"
+    ],
+    "werkzeug": "open_section",
+    "zuletzt": ""
+  },
+  "öffne_milcrid_kalender": {
+    "anzahl": 0,
+    "arg_string": "name=\"Milcrid Kalender\"",
+    "formulierungen": [
+      "öffne milcrid kalender",
+      "milcrid kalender öffnen",
+      "mach milcrid kalender auf",
+      "starte milcrid kalender",
+      "zeig milcrid kalender",
+      "öffne kalender",
+      "kalender öffnen",
+      "mach kalender auf",
+      "starte kalender",
+      "zeig kalender"
+    ],
+    "werkzeug": "open_app",
+    "zuletzt": ""
+  },
+  "öffne_milcrid_rechner": {
+    "anzahl": 0,
+    "arg_string": "name=\"Milcrid Rechner\"",
+    "formulierungen": [
+      "öffne milcrid rechner",
+      "milcrid rechner öffnen",
+      "mach milcrid rechner auf",
+      "starte milcrid rechner",
+      "zeig milcrid rechner",
+      "öffne rechner",
+      "rechner öffnen",
+      "mach rechner auf",
+      "starte rechner",
+      "zeig rechner",
+      "öffne taschenrechner",
+      "taschenrechner öffnen",
+      "mach taschenrechner auf",
+      "starte taschenrechner",
+      "zeig taschenrechner"
+    ],
+    "werkzeug": "open_app",
+    "zuletzt": ""
+  },
+  "öffne_milcrid_termine": {
+    "anzahl": 0,
+    "arg_string": "name=\"Milcrid Termine\"",
+    "formulierungen": [
+      "öffne Termine",
+      "Termine öffnen",
+      "mach Termine auf",
+      "zeig Termine",
+      "öffne Terminplaner",
+      "Terminplaner öffnen"
+    ],
+    "werkzeug": "open_app",
+    "zuletzt": ""
+  },
+  "öffne_online_ki": {
+    "anzahl": 0,
+    "arg_string": "name=\"Milcrid Online KI\"",
+    "formulierungen": [
+      "öffne Online KI",
+      "Online KI öffnen",
+      "mach die Online KI auf"
+    ],
+    "werkzeug": "open_app",
+    "zuletzt": ""
+  },
+  "öffne_portal": {
+    "anzahl": 0,
+    "arg_string": "name=\"Portal\"",
+    "formulierungen": [
+      "portal öffnen",
+      "zeig portal"
+    ],
+    "werkzeug": "open_section",
+    "zuletzt": ""
+  },
+  "öffne_profil_manager": {
+    "anzahl": 0,
+    "arg_string": "name=\"Profil Manager\"",
+    "formulierungen": [
+      "öffne profil manager",
+      "profil manager öffnen",
+      "zeig profil manager",
+      "öffne Profilmanager"
+    ],
+    "werkzeug": "open_section",
+    "zuletzt": ""
+  },
+  "öffne_thema_klaus": {
+    "anzahl": 0,
+    "arg_string": "name=\"Klaus\"",
+    "formulierungen": [
+      "öffne Thema Klaus"
+    ],
+    "werkzeug": "open_theme",
+    "zuletzt": ""
+  },
+  "öffne_thunderbird_mail": {
+    "anzahl": 0,
+    "arg_string": "name=\"Thunderbird Mail\"",
+    "formulierungen": [
+      "öffne thunderbird mail",
+      "thunderbird mail öffnen",
+      "mach thunderbird mail auf",
+      "starte thunderbird mail",
+      "zeig thunderbird mail",
+      "öffne thunderbird",
+      "thunderbird öffnen",
+      "mach thunderbird auf",
+      "starte thunderbird",
+      "zeig thunderbird",
+      "öffne mail",
+      "mail öffnen",
+      "mach mail auf",
+      "starte mail",
+      "zeig mail",
+      "öffne email",
+      "email öffnen",
+      "mach email auf",
+      "starte email",
+      "zeig email",
+      "öffne e-mail",
+      "e-mail öffnen",
+      "mach e-mail auf",
+      "starte e-mail",
+      "zeig e-mail",
+      "öffne mailprogramm",
+      "mailprogramm öffnen",
+      "mach mailprogramm auf",
+      "starte mailprogramm",
+      "zeig mailprogramm"
+    ],
+    "werkzeug": "open_app",
+    "zuletzt": ""
+  },
+  "öffne_uhr": {
+    "anzahl": 0,
+    "arg_string": "name=\"Milcrid Uhr\"",
+    "formulierungen": [
+      "öffne uhr",
+      "uhr auf",
+      "uhr öffnen",
+      "starte uhr",
+      "zeig uhr",
+      "öffne milcrid uhr",
+      "milcrid uhr öffnen",
+      "mach milcrid uhr auf",
+      "starte milcrid uhr",
+      "zeig milcrid uhr"
+    ],
+    "werkzeug": "open_app",
+    "zuletzt": ""
+  },
+  "öffne_update": {
+    "anzahl": 0,
+    "arg_string": "name=\"Update\"",
+    "formulierungen": [
+      "öffne Update"
+    ],
+    "werkzeug": "open_section",
+    "zuletzt": ""
+  },
+  "öffne_vlc_media_player": {
+    "anzahl": 0,
+    "arg_string": "name=\"VLC media player\"",
+    "formulierungen": [
+      "öffne vlc media player",
+      "vlc media player öffnen",
+      "mach vlc media player auf",
+      "starte vlc media player",
+      "zeig vlc media player",
+      "öffne vlc",
+      "vlc öffnen",
+      "mach vlc auf",
+      "starte vlc",
+      "zeig vlc",
+      "öffne videoplayer",
+      "videoplayer öffnen",
+      "mach videoplayer auf",
+      "starte videoplayer",
+      "zeig videoplayer",
+      "öffne mediaplayer",
+      "mediaplayer öffnen",
+      "mach mediaplayer auf",
+      "starte mediaplayer",
+      "zeig mediaplayer"
+    ],
+    "werkzeug": "open_app",
+    "zuletzt": ""
+  },
+  "öffne_writer": {
+    "anzahl": 0,
+    "arg_string": "name=\"LibreOffice Writer\"",
+    "formulierungen": [
+      "öffne writer",
+      "writer öffnen",
+      "mach writer auf",
+      "starte writer",
+      "zeig writer",
+      "öffne libreoffice writer",
+      "libreoffice writer öffnen",
+      "mach libreoffice writer auf",
+      "starte libreoffice writer",
+      "zeig libreoffice writer",
+      "öffne textverarbeitung",
+      "textverarbeitung öffnen",
+      "mach textverarbeitung auf",
+      "starte textverarbeitung",
+      "zeig textverarbeitung",
+      "öffne schreibprogramm",
+      "schreibprogramm öffnen",
+      "mach schreibprogramm auf",
+      "starte schreibprogramm",
+      "zeig schreibprogramm"
+    ],
+    "werkzeug": "open_app",
+    "zuletzt": ""
+  }
+}

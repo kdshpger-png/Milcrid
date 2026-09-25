@@ -1,0 +1,1 @@
+Das Layout besteht aus einer Kopfzeile mit Logo und Links (Home, Shop, Kontakt). Darunter folgt ein großes Hauptbild. Den Abschluss bilden drei nebeneinander stehende Kacheln (Kachel 1, Kachel 2, Kachel 3).

@@ -1,0 +1,32 @@
+<svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b3f9a"/>
+      <stop offset="55%" stop-color="#062a72"/>
+      <stop offset="100%" stop-color="#021231"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fff7c2"/>
+      <stop offset="25%" stop-color="#ffe27a"/>
+      <stop offset="45%" stop-color="#f6c33b"/>
+      <stop offset="65%" stop-color="#b27a08"/>
+      <stop offset="80%" stop-color="#f4c447"/>
+      <stop offset="100%" stop-color="#b88615"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="128" height="128" rx="28" fill="url(#bg)"/>
+
+  <!-- Online KI: Weltkugel hinten, Sprechblase vorne -->
+  <circle cx="78" cy="46" r="30" fill="none" stroke="url(#gold)" stroke-width="5"/>
+  <ellipse cx="78" cy="46" rx="13" ry="30" fill="none" stroke="url(#gold)" stroke-width="4"/>
+  <path d="M48 46 h60 M53 31 h50 M53 61 h50" stroke="url(#gold)" stroke-width="4" fill="none"/>
+  <path d="M18 60 a12 12 0 0 1 12 -12 h44 a12 12 0 0 1 12 12 v26 a12 12 0 0 1 -12 12 h-30 l-16 14 v-14 a12 12 0 0 1 -12 -12 z"
+        fill="url(#gold)"/>
+  <path d="M23 61 a8 8 0 0 1 8 -8 h42 a8 8 0 0 1 8 8 v24 a8 8 0 0 1 -8 8 h-31 l-10 9 v-9 h-1 a8 8 0 0 1 -8 -8 z" fill="#f7f4ea"/>
+  <g fill="#0b1a3a" opacity=".8">
+    <circle cx="38" cy="73" r="4.5"/>
+    <circle cx="52" cy="73" r="4.5"/>
+    <circle cx="66" cy="73" r="4.5"/>
+  </g>
+</svg>

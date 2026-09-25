@@ -1,0 +1,76 @@
+<!--
+  Milcrid-App: Video (Klaus-Wunsch 2026-09-24: "ein Milcrid Videobetrachter
+  waere dann nicht schlecht"). Spielt auch Musik. Nachgeladen von
+  milcrid_portal.html (milcridAppLaden), "vp"-Vorsilbe. Was Chromium nicht
+  kann (z. B. AVI), geht mit einem Klick an VLC.
+-->
+<style>
+  .vp [hidden]{display:none !important}
+  .vp{display:flex; flex-direction:column; gap:10px; width:100%; height:100%; padding:12px 14px;
+      box-sizing:border-box; font-family:var(--sans); color:var(--text)}
+  .vp-leiste{display:flex; gap:6px; flex-wrap:wrap; align-items:center}
+  .vp-knopf{
+    padding:6px 12px; border-radius:999px; cursor:pointer; white-space:nowrap;
+    border:1.5px solid var(--surface-line); background:rgba(255,255,255,.05);
+    color:var(--text); font-family:var(--sans); font-size:13px; min-width:34px;
+  }
+  .vp-knopf:hover:not(:disabled){border-color:var(--gold-line)}
+  .vp-knopf:disabled{opacity:.35; cursor:default}
+  .vp-knopf.haupt{border-color:var(--gold-line); color:var(--btn-text); font-weight:700;
+    background:radial-gradient(circle at 50% 22%, var(--btn-light) 0%, var(--btn) 45%, var(--btn-dark) 100%)}
+  .vp-trenner{width:1px; height:22px; background:var(--surface-line); margin:0 4px}
+  .vp-leiste select{background:var(--surface); border:1px solid var(--surface-line); border-radius:8px;
+    color:var(--text); font-family:var(--sans); font-size:12.5px; padding:5px 6px}
+  .vp-leiste select option{background:#0b1a3a}
+  .vp-leiste label{display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--muted); cursor:pointer}
+  .vp-leiste input[type="checkbox"]{accent-color:var(--gold)}
+  .vp-flaeche{flex:1 1 auto; min-height:0; position:relative; border-radius:10px; overflow:hidden;
+    border:1px solid var(--surface-line); background:#000}
+  .vp-video{width:100%; height:100%; display:block; background:#000; outline:none}
+  .vp-musik{position:absolute; inset:0 0 56px 0; display:flex; flex-direction:column; align-items:center;
+    justify-content:center; gap:10px; pointer-events:none; text-align:center; padding:20px;
+    background:radial-gradient(circle at 50% 40%, rgba(var(--accent-rgb),.25), transparent 60%)}
+  .vp-musik-icon{font-size:64px}
+  .vp-musik-titel{font-size:18px; font-weight:600; max-width:90%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .vp-leer{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:14px; color:var(--muted); font-size:14px; text-align:center; padding:20px; background:rgba(0,0,0,.35)}
+  .vp-leer-icon{font-size:48px; opacity:.7}
+  .vp-status{display:flex; flex-wrap:wrap; gap:4px 14px; font-size:12px; color:var(--muted); min-height:1.3em}
+  .vp-status-name{flex:1 1 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .vp-status .fehler{color:#ff9d8a}
+</style>
+
+<div class="vp" tabindex="0">
+  <div class="vp-leiste">
+    <button class="vp-knopf" id="vpOeffnen" type="button" title="Video oder Musik öffnen (Strg+O)">Öffnen</button>
+    <span class="vp-trenner"></span>
+    <button class="vp-knopf" id="vpZurueck" type="button" title="Vorherige Datei im Ordner (Bild ↑)">⏮</button>
+    <button class="vp-knopf haupt" id="vpSpielen" type="button" title="Abspielen / Pause (Leertaste)">▶</button>
+    <button class="vp-knopf" id="vpVor" type="button" title="Nächste Datei im Ordner (Bild ↓)">⏭</button>
+    <span class="vp-trenner"></span>
+    <select id="vpTempo" title="Abspielgeschwindigkeit">
+      <option value="0.5">0,5×</option><option value="0.75">0,75×</option><option value="1" selected>1×</option>
+      <option value="1.25">1,25×</option><option value="1.5">1,5×</option><option value="2">2×</option>
+    </select>
+    <label title="Nach dem Ende die nächste Datei im Ordner abspielen"><input type="checkbox" id="vpWeiter"> nächste automatisch</label>
+    <span class="vp-trenner"></span>
+    <button class="vp-knopf" id="vpVollbild" type="button" title="Vollbild (F) – zurück mit Esc">⛶ Vollbild</button>
+    <button class="vp-knopf" id="vpVlc" type="button" title="Diese Datei in VLC öffnen" hidden>In VLC öffnen</button>
+  </div>
+  <div class="vp-flaeche">
+    <video class="vp-video" id="vpVideo" controls preload="metadata"></video>
+    <div class="vp-musik" id="vpMusik" hidden>
+      <div class="vp-musik-icon">🎵</div>
+      <div class="vp-musik-titel" id="vpMusikTitel"></div>
+    </div>
+    <div class="vp-leer" id="vpLeer">
+      <div class="vp-leer-icon" id="vpLeerIcon">🎬</div>
+      <div id="vpLeerText">Noch nichts offen.<br>„Öffnen“ – oder im Datei Manager doppelt auf ein Video klicken.</div>
+    </div>
+  </div>
+  <div class="vp-status">
+    <span class="vp-status-name" id="vpName"></span>
+    <span id="vpMeldung"></span>
+    <span id="vpInfo"></span>
+  </div>
+</div>

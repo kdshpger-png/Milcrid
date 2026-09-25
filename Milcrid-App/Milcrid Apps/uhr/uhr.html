@@ -1,0 +1,220 @@
+<!--
+  Milcrid-App: Uhr
+  Wird ueber den Milcrid App Store heruntergeladen und von milcrid_portal.html
+  per Electron-Bruecke (window.milcrid.appDateiLesen) nachgeladen - kein
+  eigenes <html>/<head>, nutzt die Farbvariablen des Portals mit. Alle
+  Klassen/IDs mit "uhr"-Vorsilbe, da <style>/<script> beim Einbauen
+  dokumentweit gelten (nicht auf diesen Container beschraenkt) und so nicht
+  mit anderen installierten Milcrid-Apps kollidieren.
+-->
+<style>
+  /* Ganze App (Tabs + Inhalt) in EINEM Feld mit Rand, wie beim Rechner
+     (.rechner-card) - Klaus-Wunsch 2026-08-21, zweite Praezisierung: das
+     Feld soll das ganze Fenster mit GLEICHEM Rand ringsum ausfuellen (nicht
+     nur links/rechts schmaler sein, oben/unten aber einfach nur so hoch wie
+     der Inhalt), und die Tab-Knoepfe sollen mit INS Feld rein statt lose
+     darueber zu schweben. .uhr-huelle nimmt die volle Fenster-Flaeche und
+     zentriert .uhr-app darin (Flexbox, dafuer klappt "oben/unten Rand"
+     ueberhaupt erst - normales Blockmargin zentriert nur horizontal). Das
+     Feld selbst (.uhr-app) traegt jetzt Hintergrund/Rand statt .uhr-card;
+     container-type macht die cqw-Einheiten unten moeglich (skalieren an
+     DIESEM Feld, nicht am ganzen Bildschirm wie vw es taete). */
+  .uhr-huelle{width:100%; height:100%; display:flex; align-items:center; justify-content:center}
+  .uhr-app{
+    width:88%; height:88%;
+    background:var(--surface);
+    border:1px solid var(--surface-line);
+    border-radius:14px;
+    padding:clamp(18px, 4cqw, 40px);
+    display:flex; flex-direction:column;
+    overflow:auto;
+    container-type:inline-size;
+  }
+  .uhr-tabs{flex:0 0 auto; display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:16px}
+  .uhr-tab-btn{
+    border:1.5px solid var(--surface-line);
+    background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
+    box-shadow:0 2px 5px rgba(0,0,0,.3), inset 0 1px 1px rgba(255,255,255,.12), inset 0 -1px 2px rgba(0,0,0,.25);
+    color:var(--muted);
+    padding:clamp(7px, 2cqw, 16px) clamp(14px, 4cqw, 30px);
+    border-radius:999px;
+    font-family:var(--sans); font-size:clamp(13px, 3cqw, 22px); font-weight:600;
+    cursor:pointer;
+    transition:transform .1s;
+  }
+  .uhr-tab-btn:hover{color:var(--text); animation:sbPuls 1.3s ease-in-out infinite}
+  .uhr-tab-btn.active{
+    color:#1a1305;
+    background:linear-gradient(180deg, #fff4b8, #d8a31a);
+    border-color:var(--gold-line);
+    box-shadow:0 2px 5px rgba(0,0,0,.3), inset 0 1px 2px rgba(255,255,255,.6), inset 0 -2px 3px rgba(0,0,0,.25);
+    /* Kein Dauer-Pulsieren mehr (Klaus 2026-09-24): der gewaehlte Reiter
+       pulsiert nur noch, wenn die Maus darauf ist (.uhr-tab-btn:hover). */
+  }
+  .uhr-abschnitt{display:none}
+  .uhr-abschnitt.active{display:flex; flex-direction:column; flex:1 1 auto; min-height:0}
+  .uhr-card{flex:1 1 auto; display:flex; flex-direction:column; justify-content:center; min-height:0}
+
+  /* ---- Uhrzeit ---- */
+  /* cqw statt vw (siehe .uhr-app oben) - waechst jetzt wirklich mit, wenn
+     man das Fenster/Vollbild vergroessert, statt bei ~68px zu deckeln. */
+  .uhr-clock-anzeige{text-align:center; padding:clamp(24px, 6cqw, 60px) 0}
+  .uhr-clock-zeit{font-family:var(--sans); font-weight:700; font-size:clamp(38px, 13cqw, 130px); color:var(--text)}
+  .uhr-clock-datum{margin-top:14px; color:var(--muted); font-size:clamp(13px, 2.5cqw, 22px)}
+
+  /* ---- Wecker ---- */
+  .uhr-row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+  .uhr-field{
+    background:rgba(255,255,255,.04);
+    border:1px solid var(--surface-line);
+    border-radius:8px;
+    padding:8px 10px;
+    color:var(--text);
+    font-family:var(--sans); font-size:13px;
+  }
+  .uhr-field:focus{outline:2px solid var(--gold-line)}
+  input[type="time"].uhr-field{flex:0 0 auto}
+  input[type="text"].uhr-field{flex:1 1 auto; min-width:100px}
+  .uhr-btn{
+    border:1.5px solid var(--gold-line); border-radius:8px;
+    padding:clamp(8px, 1.6cqw, 16px) clamp(14px, 3cqw, 26px);
+    font-family:var(--sans); font-weight:700; font-size:clamp(12.5px, 2.2cqw, 18px);
+    cursor:pointer;
+    box-shadow:0 2px 5px rgba(0,0,0,.3), inset 0 1px 1px rgba(255,255,255,.2), inset 0 -1px 2px rgba(0,0,0,.25);
+    transition:transform .1s;
+  }
+  .uhr-btn:hover:not(:disabled){animation:sbPuls 1.3s ease-in-out infinite}
+  .uhr-btn:active:not(:disabled){transform:translateY(1px)}
+  .uhr-btn-gold{background:linear-gradient(180deg, #fff4b8, #d8a31a); color:#1a1305}
+  .uhr-btn-outline{
+    background:radial-gradient(circle at 50% 22%, var(--btn-light) 0%, var(--btn) 45%, var(--btn-dark) 100%);
+    color:var(--btn-text);
+  }
+  .uhr-btn-danger{
+    background:radial-gradient(circle at 50% 22%, #ffb3b6 0%, #ff6b6b 45%, #9c2b2b 100%);
+    border-color:rgba(255,107,107,.6);
+    color:#fff;
+  }
+  .uhr-btn:disabled{opacity:.4; cursor:default; box-shadow:none}
+
+  .uhr-alarm-liste{list-style:none; margin:14px 0 0; padding:0; display:flex; flex-direction:column; gap:6px; max-height:200px; overflow-y:auto}
+  .uhr-alarm-eintrag{
+    display:flex; align-items:center; gap:10px;
+    background:rgba(255,255,255,.03);
+    border:1px solid var(--surface-line);
+    border-radius:10px;
+    padding:8px 12px;
+  }
+  .uhr-alarm-eintrag .uhr-zeit{font-family:var(--sans); font-size:17px; font-weight:700; color:var(--text)}
+  .uhr-alarm-eintrag .uhr-label{flex:1 1 auto; font-size:12.5px; color:var(--muted); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .uhr-alarm-eintrag.aus .uhr-zeit, .uhr-alarm-eintrag.aus .uhr-label{opacity:.4}
+
+  .uhr-switch{position:relative; width:34px; height:20px; flex:0 0 auto}
+  .uhr-switch input{opacity:0; width:100%; height:100%; margin:0; cursor:pointer}
+  .uhr-switch .uhr-track{position:absolute; inset:0; background:rgba(255,255,255,.15); border-radius:999px; pointer-events:none; transition:background .15s}
+  .uhr-switch .uhr-thumb{position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff; transition:transform .15s; pointer-events:none}
+  .uhr-switch input:checked ~ .uhr-track{background:var(--gold)}
+  .uhr-switch input:checked ~ .uhr-thumb{transform:translateX(14px)}
+
+  .uhr-leer-hinweis{color:var(--muted); font-size:12.5px; text-align:center; padding:14px 0 2px}
+
+  /* ---- Timer & Stoppuhr ---- */
+  .uhr-grossanzeige{text-align:center; font-family:var(--sans); font-weight:700; font-size:clamp(38px, 14cqw, 140px); color:var(--text); padding:clamp(20px, 6cqw, 60px) 0}
+  .uhr-timer-eingabe{display:flex; justify-content:center; gap:8px; margin-top:4px}
+  .uhr-timer-eingabe .uhr-field{width:64px; text-align:center; font-size:15px}
+  .uhr-steuerung{display:flex; justify-content:center; gap:8px; margin-top:14px; flex-wrap:wrap}
+
+  .uhr-runden{list-style:none; margin:12px 0 0; padding:0; max-height:140px; overflow-y:auto; display:flex; flex-direction:column-reverse; gap:4px}
+  .uhr-runden li{display:flex; justify-content:space-between; font-size:12.5px; color:var(--muted); padding:3px 4px; border-bottom:1px solid var(--surface-line)}
+  .uhr-runden li span:first-child{color:var(--text)}
+
+  /* ---- Meldungs-Schalter und laufende Timer (Klaus-Brainstorm 2026-09-14) ----
+     Das alte Klingel-Overlay dieser App ist weg: es lag mit z-index 50 unter
+     jedem offenen Fenster und klingelte nur, solange die Uhr geladen war.
+     Wecker und Timer meldet jetzt das Portal selbst (Planer-Melder). */
+  .uhr-meldung{display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:8px; margin-bottom:14px;
+               font-size:12.5px; color:var(--muted)}
+  .uhr-meldung-knopf{
+    border:1.5px solid var(--surface-line); border-radius:999px; padding:5px 12px; cursor:pointer;
+    background:rgba(255,255,255,.04); color:var(--muted); font-family:var(--sans); font-size:12.5px; font-weight:600;
+  }
+  .uhr-meldung-knopf.an{color:#1a1305; background:linear-gradient(180deg, #fff4b8, #d8a31a); border-color:var(--gold-line)}
+  select.uhr-field option{background:#0b1a3a}
+  .uhr-timer-liste{list-style:none; margin:14px 0 0; padding:0; display:flex; flex-direction:column; gap:6px; max-height:180px; overflow-y:auto}
+  .uhr-timer-eintrag{display:flex; align-items:center; gap:10px; background:rgba(255,255,255,.03);
+                     border:1px solid var(--surface-line); border-radius:10px; padding:8px 12px}
+  .uhr-timer-eintrag .uhr-zeit{font-family:var(--sans); font-size:17px; font-weight:700; color:var(--text); min-width:84px}
+  .uhr-timer-eintrag .uhr-label{flex:1 1 auto; font-size:12.5px; color:var(--muted); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .uhr-fehler{color:#ff9d8a; font-size:12.5px; text-align:center; min-height:1.2em; margin-top:8px}
+</style>
+
+<div class="uhr-huelle">
+<div class="uhr-app">
+<div class="uhr-tabs">
+  <button class="uhr-tab-btn active" data-tab="uhrzeit" type="button">Uhrzeit</button>
+  <button class="uhr-tab-btn" data-tab="wecker" type="button">Wecker</button>
+  <button class="uhr-tab-btn" data-tab="timer" type="button">Timer</button>
+  <button class="uhr-tab-btn" data-tab="stoppuhr" type="button">Stoppuhr</button>
+</div>
+
+<section class="uhr-abschnitt active" id="uhrTabUhrzeit">
+  <div class="uhr-card uhr-clock-anzeige">
+    <div class="uhr-clock-zeit" id="uhrClockZeit">--:--:--</div>
+    <div class="uhr-clock-datum" id="uhrClockDatum">—</div>
+  </div>
+</section>
+
+<section class="uhr-abschnitt" id="uhrTabWecker">
+  <div class="uhr-card">
+    <div class="uhr-meldung" id="uhrMeldung">
+      <span>Wecker, Timer und Termine melden sich:</span>
+      <button class="uhr-meldung-knopf" data-meldung="klingeln" type="button">🔔 klingeln</button>
+      <button class="uhr-meldung-knopf" data-meldung="anzeigen" type="button">🪟 anzeigen</button>
+      <button class="uhr-meldung-knopf" data-meldung="beides" type="button">beides</button>
+    </div>
+    <div class="uhr-row">
+      <input type="time" class="uhr-field" id="uhrAlarmZeitInput" />
+      <input type="text" class="uhr-field" id="uhrAlarmLabelInput" placeholder="Bezeichnung (optional)" maxlength="80" />
+      <select class="uhr-field" id="uhrAlarmWiederholung">
+        <option value="einmal">einmal</option>
+        <option value="taeglich">jeden Tag</option>
+        <option value="werktags">werktags</option>
+      </select>
+      <button class="uhr-btn uhr-btn-gold" id="uhrAlarmHinzufuegenBtn" type="button">+ Hinzufügen</button>
+    </div>
+    <div class="uhr-fehler" id="uhrAlarmFehler"></div>
+    <ul class="uhr-alarm-liste" id="uhrAlarmListe"></ul>
+    <div class="uhr-leer-hinweis" id="uhrAlarmLeerHinweis">Noch keine Wecker gestellt.</div>
+  </div>
+</section>
+
+<section class="uhr-abschnitt" id="uhrTabTimer">
+  <div class="uhr-card">
+    <div class="uhr-grossanzeige" id="uhrTimerAnzeige">00:00:00</div>
+    <div class="uhr-timer-eingabe" id="uhrTimerEingabe">
+      <input type="number" class="uhr-field" id="uhrTimerStunden" min="0" max="23" placeholder="Std" />
+      <input type="number" class="uhr-field" id="uhrTimerMinuten" min="0" max="59" placeholder="Min" />
+      <input type="number" class="uhr-field" id="uhrTimerSekunden" min="0" max="59" placeholder="Sek" />
+    </div>
+    <div class="uhr-steuerung">
+      <input type="text" class="uhr-field" id="uhrTimerLabelInput" placeholder="Bezeichnung (optional)" maxlength="80" />
+      <button class="uhr-btn uhr-btn-gold" id="uhrTimerStartBtn" type="button">Start</button>
+    </div>
+    <div class="uhr-fehler" id="uhrTimerFehler"></div>
+    <ul class="uhr-timer-liste" id="uhrTimerListe"></ul>
+  </div>
+</section>
+
+<section class="uhr-abschnitt" id="uhrTabStoppuhr">
+  <div class="uhr-card">
+    <div class="uhr-grossanzeige" id="uhrStoppuhrAnzeige">00:00.00</div>
+    <div class="uhr-steuerung">
+      <button class="uhr-btn uhr-btn-gold" id="uhrSwStartBtn" type="button">Start</button>
+      <button class="uhr-btn uhr-btn-outline" id="uhrSwRundeBtn" type="button" disabled>Runde</button>
+      <button class="uhr-btn uhr-btn-outline" id="uhrSwResetBtn" type="button" disabled>Zurücksetzen</button>
+    </div>
+    <ul class="uhr-runden" id="uhrSwRunden"></ul>
+  </div>
+</section>
+</div>
+</div>

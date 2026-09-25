@@ -1,0 +1,12 @@
+[
+  {
+    "name": "Chat speichern",
+    "text": "speicher den chat",
+    "kuerzel": "cjs"
+  },
+  {
+    "name": "Uhr auf",
+    "text": "öffne Uhr",
+    "kuerzel": "u1"
+  }
+]

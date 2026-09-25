@@ -1,0 +1,1 @@
+Die Skizze besteht aus: 1. Einem Header-Bereich mit Logo und Navigation (Home, Shop, Kontakt). 2. Einem zentralen Großbildbereich als Hero-Image. 3. Drei Kacheln nebeneinander im unteren Bereich für Produkt oder Inhalte 1, 2 und 3.

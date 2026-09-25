@@ -1,0 +1,554 @@
+<!--
+  Milcrid-App: Handbuch (Klaus-Wunsch 2026-09-24: "eine Bedienungsanleitung fuer
+  Milcrid - was es ist, wie es funktioniert, Tastaturbelegung, mit Inhalts-
+  verzeichnis, so was wie Wikipedia, aber fuer Menschen").
+  Nachgeladen von milcrid_portal.html (milcridAppLaden), "hb"-Vorsilbe.
+  Das Inhaltsverzeichnis baut handbuch.js aus den Ueberschriften - wer ein
+  Kapitel ergaenzt, schreibt nur <h2>/<h3> mit id="hb-..." dazu.
+  Stand der Beschreibung: 24.09.2026.
+-->
+<style>
+  .hb [hidden]{display:none !important}
+  .hb{display:flex; width:100%; height:100%; box-sizing:border-box; font-family:var(--sans); color:var(--text)}
+
+  /* ---- Inhaltsverzeichnis links ---- */
+  .hb-inhalt{flex:0 0 250px; display:flex; flex-direction:column; gap:10px; padding:16px 12px 16px 16px;
+    border-right:1px solid var(--surface-line); min-height:0}
+  .hb-inhalt-titel{font-size:13px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--gold)}
+  .hb-suche{background:rgba(255,255,255,.04); border:1px solid var(--surface-line); border-radius:8px;
+    color:var(--text); font-family:var(--sans); font-size:13px; padding:7px 10px; outline:none}
+  .hb-suche:focus{border-color:var(--accent)}
+  .hb-verzeichnis{position:relative; flex:1 1 auto; overflow:auto; font-size:13px; line-height:1.35; padding-right:4px}
+  .hb-verzeichnis a{display:flex; gap:6px; padding:4px 6px; border-radius:6px; color:var(--text); text-decoration:none}
+  .hb-verzeichnis a:hover{background:rgba(255,255,255,.06)}
+  .hb-verzeichnis a.aktiv{background:var(--accent-dim); color:var(--gold)}
+  .hb-verzeichnis a .nr{color:var(--muted); min-width:2.2em}
+  .hb-verzeichnis a.stufe3{padding-left:22px; font-size:12.5px; color:var(--muted)}
+  .hb-verzeichnis a.stufe3.aktiv{color:var(--gold)}
+  .hb-treffer{font-size:12px; color:var(--muted)}
+  /* dunkle, schmale Rollbalken statt der weissen Vorgabe */
+  .hb ::-webkit-scrollbar{width:8px; height:8px}
+  .hb ::-webkit-scrollbar-track{background:transparent}
+  .hb ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18); border-radius:8px}
+  .hb ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.3)}
+
+  /* ---- Artikel rechts ---- */
+  .hb-seite{flex:1 1 auto; min-width:0; overflow:auto; scroll-behavior:smooth; container:hbseite / inline-size}
+  /* Wenig Platz fuer den Artikel (normale Fenstergroesse): Infobox ueber den
+     Text statt daneben - sonst blieb am Kiosk eine Textspalte von drei Woertern
+     (24.09.2026). Wie Wikipedia auf schmalen Bildschirmen. */
+  @container hbseite (max-width: 720px){
+    .hb-infobox{float:none; width:auto; max-width:420px; margin:0 auto 16px}
+    .hb-infobox table{width:100%}
+    .hb-artikel{padding:18px 22px 50px}
+  }
+  .hb-artikel{max-width:820px; margin:0 auto; padding:22px 32px 60px; font-size:15px; line-height:1.65}
+  .hb-artikel h1{font-size:28px; font-weight:700; margin:0 0 4px; font-family:Georgia,'Liberation Serif',serif; color:#fff}
+  .hb-artikel .hb-unter{color:var(--muted); font-size:13px; margin-bottom:18px; border-bottom:1px solid var(--surface-line); padding-bottom:10px}
+  .hb-artikel h2{font-size:21px; font-family:Georgia,'Liberation Serif',serif; font-weight:600; color:#fff;
+    margin:34px 0 10px; padding-bottom:4px; border-bottom:1px solid var(--surface-line); scroll-margin-top:12px}
+  .hb-artikel h3{font-size:16.5px; font-weight:700; margin:22px 0 6px; color:var(--gold); scroll-margin-top:12px}
+  .hb-artikel p{margin:0 0 12px}
+  .hb-artikel ul, .hb-artikel ol{margin:0 0 12px; padding-left:22px}
+  .hb-artikel li{margin:3px 0}
+  .hb-artikel b{color:#fff}
+  .hb-artikel a{color:var(--accent); text-decoration:none}
+  .hb-artikel a:hover{text-decoration:underline}
+  .hb-artikel kbd{display:inline-block; min-width:1.4em; text-align:center; padding:1px 7px; margin:0 1px;
+    border:1px solid var(--surface-line); border-bottom-width:2px; border-radius:6px;
+    background:rgba(255,255,255,.06); font-family:var(--sans); font-size:12.5px; line-height:1.5; white-space:nowrap}
+  .hb-artikel table{border-collapse:collapse; width:100%; margin:6px 0 16px; font-size:14px}
+  .hb-artikel th, .hb-artikel td{border:1px solid var(--surface-line); padding:7px 10px; text-align:left; vertical-align:top}
+  .hb-artikel th{background:rgba(255,255,255,.05); color:var(--gold); font-weight:600}
+  .hb-artikel td:first-child{white-space:nowrap}
+  .hb-zitat{font-family:Georgia,'Liberation Serif',serif; font-size:19px; font-style:italic; color:var(--gold);
+    border-left:3px solid var(--gold-line); padding:4px 0 4px 16px; margin:14px 0 18px}
+  .hb-hinweis{background:var(--accent-dim); border:1px solid rgba(var(--accent-rgb),.4); border-radius:10px;
+    padding:10px 14px; margin:10px 0 16px; font-size:14px}
+  .hb-achtung{background:rgba(224,96,74,.12); border:1px solid rgba(224,96,74,.5); border-radius:10px;
+    padding:10px 14px; margin:10px 0 16px; font-size:14px}
+  .hb-siehe{font-size:13.5px; color:var(--muted); margin:-4px 0 12px}
+  .hb-siehe::before{content:"→ Siehe auch: "}
+
+  /* Infobox rechts oben wie bei Wikipedia */
+  .hb-infobox{float:right; width:270px; margin:0 0 14px 20px; border:1px solid var(--surface-line); border-radius:10px;
+    background:rgba(255,255,255,.035); font-size:13px; overflow:hidden}
+  .hb-infobox-kopf{background:var(--accent-dim); color:#fff; font-weight:700; text-align:center; padding:8px; font-size:15px}
+  .hb-infobox-bild{text-align:center; padding:12px 0 6px}
+  .hb-infobox-bild img{width:84px; height:84px}
+  .hb-infobox table{margin:0; font-size:13px}
+  .hb-infobox th, .hb-infobox td{border:none; border-top:1px solid var(--surface-line); padding:6px 10px}
+  .hb-infobox th{background:none; width:40%; color:var(--muted); font-weight:500}
+  .hb-infobox td:first-child{white-space:normal}
+
+  .hb-nachoben{position:sticky; bottom:14px; float:right; margin-right:14px; padding:6px 12px; border-radius:999px;
+    border:1.5px solid var(--gold-line); background:var(--panel); color:var(--gold); cursor:pointer; font-size:13px}
+
+  /* Deutsch / English (26.09.2026) */
+  .hb-sprache{display:flex; gap:6px; margin:0 0 10px}
+  .hb-sprache button{flex:1; padding:5px 8px; border-radius:8px; border:1px solid var(--surface-line);
+    background:none; color:var(--muted); cursor:pointer; font-size:13px}
+  .hb-sprache button.aktiv{border-color:var(--gold-line); color:var(--gold); background:rgba(255,255,255,.05)}
+
+  /* Schmales Fenster: Verzeichnis oben statt links */
+  .hb-huelle{width:100%; height:100%; container-type:inline-size}
+  @container (max-width: 760px){
+    .hb{flex-direction:column}
+    .hb-inhalt{flex:0 0 auto; max-height:34%; border-right:none; border-bottom:1px solid var(--surface-line)}
+    .hb-infobox{float:none; width:auto; margin:0 0 14px}
+    .hb-artikel{padding:16px 18px 50px}
+  }
+</style>
+
+<div class="hb-huelle">
+<div class="hb">
+  <nav class="hb-inhalt">
+    <div class="hb-inhalt-titel">Inhalt</div>
+    <div class="hb-sprache"><button type="button" data-sprache="de" class="aktiv">Deutsch</button><button type="button" data-sprache="en">English</button></div>
+    <input type="search" class="hb-suche" id="hbSuche" placeholder="🔍 Im Handbuch suchen">
+    <div class="hb-treffer" id="hbTreffer" hidden></div>
+    <div class="hb-verzeichnis" id="hbVerzeichnis"></div>
+  </nav>
+
+  <div class="hb-seite" id="hbSeite">
+  <article class="hb-artikel" id="hbArtikel">
+
+    <h1>Milcrid</h1>
+    <div class="hb-unter">Das Handbuch – was Milcrid ist, wie du es bedienst, und alle Tasten auf einen Blick. Stand: September 2026.</div>
+
+    <aside class="hb-infobox">
+      <div class="hb-infobox-kopf">Milcrid</div>
+      <div class="hb-infobox-bild"><img id="hbLogo" alt=""></div>
+      <table>
+        <tr><th>Was</th><td>Oberfläche für den ganzen PC – mit eigener KI</td></tr>
+        <tr><th>KI</th><td>läuft auf deinem eigenen Rechner, ohne Internet</td></tr>
+        <tr><th>Bedienung</th><td>Maus, Tastatur und Sprache</td></tr>
+        <tr><th>Sprache</th><td>Deutsch</td></tr>
+        <tr><th>Grundlage</th><td>Linux (Ubuntu)</td></tr>
+        <tr><th>Entwickelt von</th><td>Klaus, zusammen mit einem Team aus KIs</td></tr>
+        <tr><th>Mehr</th><td>miluh.de</td></tr>
+      </table>
+    </aside>
+
+    <p><b>Milcrid</b> ist eine Oberfläche für den Computer, in der eine <b>eigene künstliche Intelligenz</b> mitarbeitet.
+    Statt eines gewöhnlichen Schreibtischs mit Startmenü siehst du den <b>Milcrid-Startbildschirm</b>: große Knöpfe,
+    ein Eingabefeld und Fenster für alles, was du tust. Du kannst klicken wie gewohnt – oder Milcrid einfach sagen, was passieren soll.</p>
+    <p>Die KI läuft <b>auf deinem eigenen PC</b>. Was du sagst und schreibst, bleibt bei dir.</p>
+    <div class="hb-zitat">„KI braucht kein Ich. Sie braucht dich für das Wir.“</div>
+
+    <h2 id="hb-was">Was ist Milcrid?</h2>
+    <p>Die meisten KI-Programme laufen auf fremden Rechnern im Internet: Man schickt seine Fragen weg und bekommt Antworten
+    zurück. Milcrid geht den anderen Weg. Die KI – ein sogenanntes <b>Sprachmodell</b> – ist auf deinem Computer
+    installiert und arbeitet dort. Sie kann deshalb auch Dinge <b>auf deinem PC tun</b>: Programme öffnen, Fenster
+    ordnen, Dateien finden, einen Termin eintragen, die Lautstärke einstellen.</p>
+    <p>Die Idee dahinter steckt im Leitsatz oben: Die KI soll nicht an deiner Stelle handeln, sondern <b>mit dir
+    zusammen</b>. Du entscheidest, sie hilft. Bei allem, was sich nicht rückgängig machen lässt – etwa den PC ausschalten
+    oder eine Datei löschen – fragt Milcrid vorher nach.</p>
+    <h3 id="hb-was-kann">Was Milcrid kann</h3>
+    <ul>
+      <li><b>Mit dir sprechen und schreiben</b> – Fragen beantworten, Texte erklären, Ideen sammeln.</li>
+      <li><b>Den PC bedienen</b> – „öffne Firefox“, „mach die Uhr groß“, „ordne alle Fenster nebeneinander an“.</li>
+      <li><b>Eigene kleine Programme</b> mitbringen: Uhr, Rechner, Termine, Notizen, Kalender, Skizze, Editor,
+        Bildbetrachter, Video.</li>
+      <li><b>Dateien verwalten</b> im Datei Manager und in <b>Themen</b> – deinen eigenen Sammlungen.</li>
+      <li><b>Sich merken</b>, wie du Dinge sagst – und dazulernen, wenn du ihm sagst, was richtig war.</li>
+    </ul>
+
+    <h2 id="hb-bildschirm">Der Bildschirm auf einen Blick</h2>
+    <table>
+      <tr><th>Was du siehst</th><th>Wo</th><th>Wozu</th></tr>
+      <tr><td>Blaue Knöpfe</td><td>links und rechts</td><td>Deine Abkürzungen. Ein Klick öffnet, was du draufgelegt hast
+        (ein Programm, ein Thema, einen Bereich).</td></tr>
+      <tr><td>Knopf „Portal“</td><td>rechts unten (fest)</td><td>Öffnet das <b>Portal</b> – die Übersicht aller
+        Bereiche.</td></tr>
+      <tr><td>Uhr</td><td>oben in der Mitte</td><td>Ein Klick auf die große Uhr macht sie zu einem kleinen Symbol, ein
+        Klick auf das Symbol zeigt sie wieder.</td></tr>
+      <tr><td>Eingabefeld</td><td>unten in der Mitte</td><td>Hier schreibst oder sprichst du mit Milcrid.</td></tr>
+      <tr><td>Goldene Punkte</td><td>links und rechts vom Eingabefeld</td><td>Weitere Abkürzungen. Die beiden äußersten
+        sind fest: <b>links Neustart</b>, <b>rechts Ausschalten</b>.</td></tr>
+      <tr><td>Chatfenster</td><td>über dem Eingabefeld</td><td>Das Gespräch mit Milcrid.</td></tr>
+      <tr><td>Icon-Fenster</td><td>erscheint unten links</td><td>Hier liegen weggeklappte (minimierte) Fenster.</td></tr>
+    </table>
+    <p class="hb-siehe"><a href="#hb-knoepfe">Eigene Abkürzungen</a> · <a href="#hb-fenster">Fenster</a> ·
+    <a href="#hb-menue">Das Portal</a></p>
+
+    <h2 id="hb-sprechen">Mit Milcrid sprechen und schreiben</h2>
+    <h3 id="hb-schreiben">Schreiben</h3>
+    <p>Klick ins Eingabefeld unten, schreib, was du möchtest, und drück <kbd>Enter</kbd> – oder den Pfeil rechts im
+    Feld. Die Antwort erscheint im Chatfenster.</p>
+    <h3 id="hb-mikrofon">Sprechen mit dem Mikrofon</h3>
+    <p>Halte den <b>Mikrofon-Knopf</b> im Eingabefeld <b>gedrückt</b>, sprich, und lass los. Milcrid schreibt das
+    Gesagte ins Feld und schickt es ab, genau wie getippt. Nach spätestens 30 Sekunden hört die Aufnahme von selbst auf.</p>
+    <h3 id="hb-codewort">Sprechen mit dem Codewort</h3>
+    <p>Ist das <b>Codewort</b> eingeschaltet, hört Milcrid mit, ohne dass du einen Knopf drückst. Sag zuerst das Codewort
+    und dann deinen Wunsch, zum Beispiel: <i>„Computer, öffne die Uhr.“</i> Das Codewort kannst du selbst wählen –
+    unter <b>Lokale KI › Fähigkeiten</b> („Codewort ändern“). Dort schaltest du auch Mikrofon und Codewort einzeln an
+    und aus.</p>
+    <h3 id="hb-chatgroesse">Chat- und Schriftgröße</h3>
+    <p>Rechts im Eingabefeld sitzen kleine Knöpfe: <b>− • +</b> machen die Schrift kleiner, normal oder größer;
+    <b>○ 1 2 3</b> stellen das Chatfenster auf aus, klein, mittel oder Vollbild.</p>
+    <h3 id="hb-beispiele">Was du sagen kannst – Beispiele</h3>
+    <table>
+      <tr><th>Du sagst</th><th>Milcrid tut</th></tr>
+      <tr><td>öffne Firefox</td><td>startet Firefox</td></tr>
+      <tr><td>öffne die Uhr · öffne den Editor</td><td>öffnet Milcrids eigene Programme</td></tr>
+      <tr><td>mach die Uhr groß · minimiere den Kalender</td><td>ändert ein Fenster</td></tr>
+      <tr><td>schließe alle Fenster</td><td>räumt den Bildschirm auf – weggeklappte Fenster im Icon-Fenster bleiben</td></tr>
+      <tr><td>schließe alle Fenster und Icon Fenster</td><td>schließt alles, auch die weggeklappten Fenster</td></tr>
+      <tr><td>ordne alle Fenster nebeneinander an</td><td>ordnet die offenen Fenster</td></tr>
+      <tr><td>öffne Thema Haushalt</td><td>öffnet eines deiner Themen</td></tr>
+      <tr><td>notiere: Milch kaufen</td><td>legt eine Notiz an</td></tr>
+      <tr><td>stell die Lautstärke auf 30 Prozent</td><td>ändert die Lautstärke</td></tr>
+      <tr><td>wie spät ist es?</td><td>sagt Uhrzeit und Datum</td></tr>
+      <tr><td>ist die Uhr offen?</td><td>antwortet, ohne etwas zu tun</td></tr>
+      <tr><td>was hast du gerade eben gemacht?</td><td>sagt, was es zuletzt wirklich ausgeführt hat</td></tr>
+      <tr><td>PC Neustart · PC aus</td><td>öffnet das Fenster mit der Rückfrage – erst dein „ja“ (oder ein Klick) führt es aus</td></tr>
+    </table>
+    <p>Du musst keine festen Befehle lernen. Sag es so, wie du es einem Menschen sagen würdest. Ist etwas unklar,
+    fragt Milcrid nach, statt zu raten.</p>
+    <h3 id="hb-lernen">Milcrid lernt dazu: Daumen, Merkliste, Wörter</h3>
+    <ul>
+      <li>Unter jeder Antwort stehen <b>👍 und 👎</b>. Damit sagst du Milcrid, ob es richtig war. Beim 👎 wird zusätzlich
+        ein Bildschirmfoto gemacht, damit der Fehler später gefunden werden kann.</li>
+      <li>Sagst du direkt nach einem ausgeführten Befehl <i>„das war richtig“</i>, merkt sich Milcrid deinen Satz in der
+        <b>Merkliste</b>. Beim nächsten Mal führt es genau diesen Satz sofort aus – ohne zu überlegen.</li>
+      <li>Versteht die Spracherkennung ein Wort immer wieder falsch, trägst du es in die <b>Wörterliste</b> ein
+        (<b>C26SO › 3 · Spracheingabe</b>): links das, was ankommt, rechts das, was gemeint ist.</li>
+      <li>Was Milcrid gar nicht verstanden hat, sammelt es unter <b>Lokale KI › Fähigkeiten › Nicht verstanden</b>.</li>
+    </ul>
+
+    <h2 id="hb-fenster">Fenster</h2>
+    <p>Alles in Milcrid öffnet sich in <b>Fenstern</b>, die du frei bewegen kannst:</p>
+    <ul>
+      <li><b>Verschieben:</b> an der Titelleiste ziehen.</li>
+      <li><b>Größe ändern:</b> an der rechten unteren Ecke ziehen.</li>
+      <li><b>— Minimieren:</b> das Fenster klappt weg und landet als Bildchen im <b>Icon-Fenster</b>.</li>
+      <li><b>⤢ Maximieren:</b> das Fenster füllt den Bildschirm. Nochmal klicken – wieder normal.</li>
+      <li><b>× Schließen.</b></li>
+    </ul>
+    <h3 id="hb-iconfenster">Das Icon-Fenster</h3>
+    <p>Sobald du ein Fenster minimierst, erscheint unten links das <b>Icon-Fenster</b> mit einem Bildchen dafür. Ein Klick
+    auf das Bildchen holt das Fenster zurück. Du kannst das Icon-Fenster verschieben und in der Größe ziehen. Der runde
+    blaue Knopf darin schließt alles, was dort liegt. Du kannst auch sagen „öffne Icon Fenster“ oder „schließe Icon
+    Fenster“.</p>
+    <h3 id="hb-anordnen">Fenster anordnen</h3>
+    <p>Sind mehrere Fenster offen, klick mit der <b>rechten Maustaste auf eine freie Stelle</b> des Startbildschirms: Dort kannst du
+    sie nebeneinander, untereinander oder gestaffelt anordnen. Oder sag es: „ordne alle Fenster nebeneinander an“.</p>
+
+    <h2 id="hb-knoepfe">Eigene Abkürzungen: blaue Knöpfe und goldene Punkte</h2>
+    <p>Die blauen Knöpfe am Rand und die goldenen Punkte unten sind deine <b>Abkürzungen</b> – bis auf den blauen
+    Knopf <b>„Portal“</b> rechts unten, der immer das Portal öffnet. Belegen geht so:
+    Ziehe ein Programm, ein Thema oder einen Bereich mit der Maus auf einen <b>freien</b> Knopf oder Punkt. Ab dann
+    öffnet ein Klick genau das.</p>
+    <ul>
+      <li><b>Wieder frei machen:</b> Rechtsklick auf den Knopf › „Verbindung trennen“.</li>
+      <li><b>Wie viele es gibt:</b> <b>Einstellungen › Buttons</b> – Anzahl der blauen Knöpfe und goldenen Punkte je
+        Seite.</li>
+      <li>Die beiden äußersten goldenen Punkte sind fest: <b>Neustart</b> (links) und <b>Ausschalten</b> (rechts).</li>
+    </ul>
+
+    <h2 id="hb-menue">Das Portal – die Übersicht aller Bereiche</h2>
+    <p>Der blaue Knopf <b>„Portal“</b> rechts unten öffnet die Übersicht mit allen Bereichen von Milcrid. Du kannst auch
+    sagen: „öffne Portal“.</p>
+    <table>
+      <tr><th>Bereich</th><th>Was du dort findest</th></tr>
+      <tr><td>📦 Meine Apps</td><td>deine Programme: Milcrids eigene, Programme vom PC (Linux) und der Milcrid App Store</td></tr>
+      <tr><td>🛡️ C26SO</td><td>der „Wächter“: Aufträge nach Zeitplan, Sicherheit und Grenzen, Spracheingabe, Werkzeuge</td></tr>
+      <tr><td>🔧 Einstellungen</td><td>Schrift, Farben, Knöpfe, Größe, Hintergrund, Standardprogramme, Portal durchsuchen</td></tr>
+      <tr><td>👤 Profil Manager</td><td>was Milcrid über dich weiß, sein eigenes Profil, sein <a href="#hb-gedaechtnis">Gedächtnis und Tagebuch</a></td></tr>
+      <tr><td>🧠 Lokale KI</td><td>welches Sprachmodell Milcrid benutzt, was die KI darf (Fähigkeiten), KI-Test</td></tr>
+      <tr><td>🔌 API KI</td><td>Schnittstelle für eigene Anwendungen (für Fortgeschrittene)</td></tr>
+      <tr><td>🐧 Linux Python</td><td>Hilfe zu Linux und Python</td></tr>
+      <tr><td>☁️ Cloud</td><td>Cloud-Speicher und Abgleich</td></tr>
+      <tr><td>⚙️ Betriebssystem</td><td>Lautstärke, Mikrofon, Bildschirm und alle Schalter des Systems</td></tr>
+      <tr><td>🔄 Update</td><td>Aktualisierungen für Linux, Programme und die KI</td></tr>
+      <tr><td>📁 Datei Manager</td><td>Ordner und Dateien auf deinem PC</td></tr>
+      <tr><td>🖥️ Themen Manager</td><td>deine eigenen Sammlungen („Themen“)</td></tr>
+      <tr><td>🧩 Extras</td><td>Milcrids eigene Programme – einzeln an- und abschaltbar</td></tr>
+      <tr><td>🧪 System Test</td><td>prüft Milcrid auf Fehler – Ergebnis mit einem Klick</td></tr>
+    </table>
+    <p>Innerhalb eines Bereichs führt <b>„← Zurück“</b> oben neben dem Titel eine Ebene zurück.</p>
+
+    <h2 id="hb-extras">Milcrids eigene Programme (Extras)</h2>
+    <p>Diese Programme gehören fest zu Milcrid. Unter <b>Extras</b> kannst du jedes einzeln abschalten – dann
+    verschwindet es auch für die KI.</p>
+    <table>
+      <tr><th>Programm</th><th>Wozu</th></tr>
+      <tr><td>🕐 Milcrid Uhr</td><td>Uhrzeit, Wecker, Timer, Stoppuhr</td></tr>
+      <tr><td>🧮 Milcrid Rechner</td><td>Taschenrechner</td></tr>
+      <tr><td>🗓️ Milcrid Termine</td><td>Termine mit Erinnerung, Dateien und Notizen</td></tr>
+      <tr><td>📝 Milcrid Notizen</td><td>Notizen – auch zu einem Datum oder Termin</td></tr>
+      <tr><td>📅 Milcrid Kalender</td><td>Monatsübersicht über die Termine</td></tr>
+      <tr><td>🎨 Milcrid Skizze</td><td>zeichnen und der KI zeigen, was daraus werden soll</td></tr>
+      <tr><td>📝 Milcrid Editor</td><td>schnell etwas schreiben – oder Text- und Programmdateien öffnen</td></tr>
+      <tr><td>🖼️ Milcrid Bildbetrachter</td><td>Bilder ansehen, blättern, drehen, speichern</td></tr>
+      <tr><td>🎬 Milcrid Video</td><td>Videos und Musik abspielen</td></tr>
+      <tr><td>🌐 Milcrid Online KI</td><td>Chat mit einer Internet-KI (Gemini, Claude …) über deinen eigenen Zugangsschlüssel</td></tr>
+      <tr><td>▶️ Milcrid Direkt Aufgaben</td><td>Aufträge mit Kürzel – anlegen und mit einem Klick ausführen</td></tr>
+      <tr><td>🚦 Milcrid Dialog-Regeln</td><td>was Milcrid vorschlägt, wenn ein bekanntes Fenster etwas fragt</td></tr>
+      <tr><td>📖 Milcrid Handbuch</td><td>dieses Handbuch</td></tr>
+    </table>
+    <h3 id="hb-editor">Milcrid Editor</h3>
+    <p>Ein schlichtes Schreibprogramm wie der Editor unter Windows. Mehrere Dateien liegen in <b>Reitern</b>
+    nebeneinander; ein <b>●</b> am Reiter heißt „noch nicht gespeichert“. Programmdateien (etwa <i>.py</i>) zeigt er mit
+    Zeilennummern, normalen Text mit Zeilenumbruch – der Knopf <b>Zeilenumbruch</b> schaltet um. Was du noch nicht
+    gespeichert hast, geht auch bei einem Neustart nicht verloren. Beim Schließen eines ungespeicherten Reiters fragt er
+    „verwerfen?“ – erst ein zweiter Klick schließt.</p>
+    <h3 id="hb-bildbetrachter">Milcrid Bildbetrachter</h3>
+    <p>Zeigt ein Bild passend zum Fenster. Mit dem <b>Mausrad</b> zoomst du an der Stelle, auf die du zeigst; mit
+    gedrückter Maus verschiebst du das Bild; ein <b>Doppelklick</b> wechselt zwischen „ganz sehen“ und Originalgröße.
+    Mit <b>◀ ▶</b> blätterst du durch alle Bilder im selben Ordner. <b>⟲ ⟳</b> drehen; <b>Speichern</b> übernimmt die
+    Drehung in die Datei, <b>Speichern unter</b> legt eine neue an.</p>
+    <h3 id="hb-video">Milcrid Video</h3>
+    <p>Spielt Videos (MP4, WebM) und Musik (MP3, OGG, WAV, FLAC). <b>⏮ ⏭</b> springen zur vorherigen oder nächsten Datei
+    im Ordner; bei Musik ist „nächste automatisch“ gleich eingeschaltet. Dazu Tempo und Vollbild. Kann Milcrid Video ein
+    Format nicht abspielen (etwa AVI), erscheint <b>„In VLC öffnen“</b>. Beim Schließen des Fensters hört es auf; beim
+    Minimieren läuft Musik weiter.</p>
+
+    <h2 id="hb-dateimanager">Der Datei Manager</h2>
+    <p>Zeigt die Ordner und Dateien auf deinem PC, ähnlich wie der Explorer unter Windows. Du kannst mehrere Datei
+    Manager gleichzeitig öffnen.</p>
+    <ul>
+      <li><b>Ordner öffnen:</b> einfacher Klick. <b>Datei öffnen:</b> Doppelklick – sie geht mit ihrem
+        <a href="#hb-oeffnen">Standardprogramm</a> auf.</li>
+      <li><b>Oben:</b> ◀ ▶ zurück und vor, ▲ eine Ebene höher, die Adresszeile (jeder Teil ist anklickbar), das
+        <b>Suchfeld</b> für den offenen Ordner und die Sortierung.</li>
+      <li><b>Spaltenköpfe</b> Name, Geändert, Art, Größe: ein Klick sortiert, ein zweiter dreht die Reihenfolge um.
+        Ordner stehen immer oben.</li>
+      <li><b>+ Neuer Ordner / + Neue Datei:</b> Name eintippen, <kbd>Enter</kbd>.</li>
+      <li><b>Unten</b> steht, wie viele Einträge es gibt und was du ausgewählt hast.</li>
+      <li><b>Links</b> ganz oben <b>💾 Laufwerke</b> (siehe unten), darunter 🏠 Home und der Ordnerbaum: ▶ klappt einen
+        Ordner auf.</li>
+      <li>Ein <b>Rechtsklick auf die freie Fläche</b> (auch weit unten) bietet Neuer Ordner, Neue Datei und Einfügen.</li>
+      <li>Dateien lassen sich mit der Maus in ein <a href="#hb-themen">Thema</a> ziehen.</li>
+    </ul>
+    <h3 id="hb-rechtsklick">Das Rechtsklick-Menü</h3>
+    <table>
+      <tr><th>Eintrag</th><th>Was passiert</th></tr>
+      <tr><td>Öffnen</td><td>mit dem Standardprogramm</td></tr>
+      <tr><td>Öffnen mit ▸</td><td>Liste der Programme, die diese Datei können – das Standardprogramm ist golden</td></tr>
+      <tr><td>Bearbeiten</td><td>kleines Textfeld direkt unter der Datei – zum schnellen Ansehen und Ändern</td></tr>
+      <tr><td>Eigenschaften</td><td>Name, Art, Größe, Datum, Pfad</td></tr>
+      <tr><td>Kopieren · Ausschneiden</td><td>zum Einfügen in einem anderen Ordner (Rechtsklick auf freie Fläche › Einfügen)</td></tr>
+      <tr><td>Umbenennen</td><td>der Name ist schon markiert, die Endung bleibt stehen</td></tr>
+      <tr><td>Duplizieren</td><td>Kopie mit neuem Namen im selben Ordner</td></tr>
+      <tr><td>Löschen</td><td>legt in den <a href="#hb-papierkorb">Papierkorb</a> – zurückholbar</td></tr>
+    </table>
+    <p><b>Endgültig löschen</b>, am Papierkorb vorbei: <kbd>Umschalt</kbd>+<kbd>Entf</kbd> – Milcrid fragt vorher nach.</p>
+
+    <h3 id="hb-papierkorb">Der Papierkorb</h3>
+    <p>Was du im Datei Manager löschst – oder Milcrid auf deinen Wunsch löscht –, landet im <b>Milcrid Papierkorb</b>.
+    Öffnen: im Datei Manager links auf <b>🗑 Papierkorb</b>, über die Kachel unter „Meine Apps“ oder mit „öffne Papierkorb“.</p>
+    <ul>
+      <li>Die Liste zeigt Name, <b>ursprünglichen Ort</b>, wann gelöscht und Größe – das Neueste oben.</li>
+      <li><b>↩ Wiederherstellen</b> (oder <kbd>Enter</kbd>) legt es an den alten Ort zurück. Liegt dort inzwischen eine
+        Datei mit gleichem Namen, heißt die zurückgeholte „Name (2)“ – überschrieben wird nie etwas.</li>
+      <li><b>Endgültig löschen</b> (oder <kbd>Entf</kbd>) und <b>Papierkorb leeren</b> fragen vorher nach.</li>
+      <li>Mehrere auswählen: <kbd>Strg</kbd>+Klick, alle: <kbd>Strg</kbd>+<kbd>A</kbd>. Rechtsklick geht auch.</li>
+      <li>Auf einem <a href="#hb-laufwerke">USB-Stick</a> Gelöschtes bleibt auf dem Stick (in einem versteckten Ordner)
+        und erscheint im Papierkorb, solange der Stick steckt.</li>
+    </ul>
+    <div class="hb-achtung"><b>Gut zu wissen:</b> Der Papierkorb belegt weiter Platz auf der Platte. Erst „Papierkorb
+    leeren“ macht ihn frei.</div>
+
+    <h3 id="hb-laufwerke">USB-Sticks und externe Festplatten</h3>
+    <p>Stick oder Festplatte einstecken, im Datei Manager links auf <b>💾 Laufwerke</b> klicken. Milcrid bindet alles
+    Eingesteckte ein und zeigt es mit Name, Größe und freiem Platz. Ein Klick öffnet das Laufwerk – ab da geht alles wie
+    im Home: öffnen, kopieren, ausschneiden, umbenennen, löschen. Kopieren und Verschieben klappt auch zwischen Home und
+    Stick (Kopieren, dann auf dem Stick Rechtsklick auf freie Fläche › Einfügen, oder <kbd>Strg</kbd>+<kbd>V</kbd>).</p>
+    <p>Steckt nichts, steht da „Kein USB-Stick und keine externe Festplatte eingesteckt“. Nach dem Einstecken einfach
+    nochmal auf 💾 Laufwerke klicken.</p>
+    <div class="hb-achtung"><b>Vor dem Abziehen:</b> Rechtsklick auf das Laufwerk › <b>Sicher entfernen</b>. Erst wenn
+    oben „… kann jetzt abgezogen werden“ steht, ist alles geschrieben. Wird der Stick noch benutzt (z. B. ein Bild von
+    ihm ist offen), sagt Milcrid das – Fenster schließen, nochmal versuchen.</div>
+    <p>Milcrid selbst (die KI) arbeitet nur in deinem Home – auf Sticks greift nur der Datei Manager zu, wenn du ihn
+    bedienst.</p>
+
+    <h2 id="hb-oeffnen">Dateien öffnen und Standardprogramme</h2>
+    <p>Wenn du eine Datei öffnest – im Datei Manager, in einem Thema, über einen Knopf oder indem du Milcrid sagst
+    „öffne …“ –, entscheidet Milcrid nach der <b>Art der Datei</b>, welches Programm sie bekommt. Das stellst du unter
+    <b>Einstellungen › Standardprogramme</b> ein:</p>
+    <table>
+      <tr><th>Dateiart</th><th>Vorgabe</th></tr>
+      <tr><td>Text (.txt, .md) und Programmcode (.py …)</td><td>Milcrid Editor</td></tr>
+      <tr><td>Webseiten, PDF</td><td>Firefox</td></tr>
+      <tr><td>Bilder</td><td>Milcrid Bildbetrachter</td></tr>
+      <tr><td>Videos</td><td>Milcrid Video</td></tr>
+      <tr><td>Musik</td><td>VLC</td></tr>
+      <tr><td>Dokumente, Tabellen, Präsentationen</td><td>LibreOffice</td></tr>
+      <tr><td>Archive (.zip …) und alles andere</td><td>Linux entscheidet</td></tr>
+    </table>
+    <p>In der Auswahl stehen nur Programme, die die jeweilige Dateiart wirklich können – auch solche, die du später
+    installierst. <b>„Alle auf Vorgabe“</b> stellt alles zurück. Geht eine Datei gar nicht auf, sagt Milcrid Bescheid,
+    oben in der Mitte des Bildschirms.</p>
+
+    <h2 id="hb-themen">Themen</h2>
+    <p>Ein <b>Thema</b> ist deine eigene Sammlung – zum Beispiel „Haushalt“, „Rechnungen“ oder „Auto“. Hinein kommen
+    Dateien und Programme, die zusammengehören. Du legst Themen im <b>Themen Manager</b> an, ziehst Dateien aus dem
+    Datei Manager hinein und öffnest sie später mit einem Klick oder mit „öffne Thema …“. Mehrere Themen können
+    gleichzeitig offen sein.</p>
+    <div class="hb-hinweis"><b>Tipp:</b> Gib einem Thema keinen Namen, der auch dein eigener Name ist. „Öffne Thema
+    Klaus“ versteht die KI leichter falsch als „öffne Thema Privat“.</div>
+
+    <h2 id="hb-programme">Programme</h2>
+    <p>Unter <b>Meine Apps</b> findest du alle Programme. <b>Vom PC (Linux)</b> zeigt, was auf dem Rechner installiert
+    ist (Firefox, LibreOffice, VLC …); <b>„Neu einlesen“</b> holt frisch installierte dazu. Ein Programm startest du mit
+    einem Klick, mit „öffne …“ oder über eine <a href="#hb-knoepfe">Abkürzung</a>. Programme, die nicht zu Milcrid
+    gehören, öffnen sich in ihrem eigenen Fenster.</p>
+
+    <h2 id="hb-ki">Die KI</h2>
+    <h3 id="hb-ki-lokal">Lokale KI</h3>
+    <p>Milcrids KI ist ein <b>Sprachmodell</b>, das auf deinem PC läuft. Unter <b>Lokale KI › Models</b> siehst du, welche
+    Modelle installiert sind, und kannst mit einem Klick wechseln. Größere Modelle wissen mehr, antworten aber
+    langsamer.</p>
+    <h3 id="hb-faehigkeiten">Was die KI darf</h3>
+    <p>Unter <b>Lokale KI › Fähigkeiten</b> und <b>C26SO › Sicherheit</b> legst du fest, was Milcrid selbst tun darf –
+    Programme öffnen, Fenster schließen, Dateien öffnen, im Internet suchen und so weiter. Was ausgeschaltet ist, bietet
+    Milcrid der KI gar nicht erst an.</p>
+    <h3 id="hb-gedaechtnis">Was Milcrid sich merkt: Selbst, Tagebuch, Erfahrungs-Log, Gedächtnis</h3>
+    <p>Unter <b>Profil Manager › KI Profil</b> liegen fünf Bereiche. Jeder ist <b>eine Zeile</b>:
+    <b>Anzeigen · Kopieren · Löschen · an/aus</b>.</p>
+    <table>
+      <tr><th>Bereich</th><th>Was drinsteht</th></tr>
+      <tr><td>🪞 Selbst</td><td>das <b>Fundament</b> (Milcrids Grundwerte – ändert nur du) und das <b>Selbstbild</b>, das Milcrid
+        selbst fortschreibt (eigene Positionen, offene Fragen, Widersprüche zu dir)</td></tr>
+      <tr><td>📔 Tagebuch</td><td>wie Milcrid ein Gespräch erlebt hat – nach jedem gespeicherten Chat ein Eintrag</td></tr>
+      <tr><td>🧾 Erfahrungs-Log</td><td>was dabei technisch schiefging und wie es gelöst wurde</td></tr>
+      <tr><td>⏱️ Kurzzeitgedächtnis</td><td>die letzten Zusammenfassungen – die liest Milcrid bei jedem Start</td></tr>
+      <tr><td>🗄️ Langzeitgedächtnis</td><td>alle älteren Zusammenfassungen und die gespeicherten Chats im Wortlaut</td></tr>
+    </table>
+    <ul>
+      <li><b>Anzeigen</b> klappt den Inhalt direkt darunter auf, das Neueste oben. Nochmal klicken = Ausblenden.</li>
+      <li><b>Kopieren</b> und <b>Löschen</b> gehen erst, wenn der Inhalt angezeigt wird – man sieht immer, was man
+        kopiert oder löscht. Kopieren legt den Text in die Zwischenablage (einfügen mit <kbd>Strg</kbd>+<kbd>V</kbd>).</li>
+      <li><b>Löschen</b> fragt nach und legt alles in den <a href="#hb-papierkorb">Papierkorb</a> – zurückholbar.
+        Beim Selbst wird nur das Selbstbild geleert, das Fundament bleibt.</li>
+      <li><b>an/aus:</b> ob Milcrid dort weiter hineinschreibt. Beim Selbst: ob Milcrid sein Selbstbild fortschreiben darf.</li>
+    </ul>
+    <h3 id="hb-online">Online KI (freiwillig)</h3>
+    <p><b>Milcrid Online KI</b> verbindet dich auf Wunsch mit einer Internet-KI wie Gemini oder Claude – über deinen
+    eigenen Zugangsschlüssel. Die Verbindung ist <b>beim Start immer aus</b>. Erst wenn du sie im Fenster einschaltest,
+    geht etwas ins Internet.</p>
+
+    <h2 id="hb-sicherheit">Sicherheit und Datenschutz</h2>
+    <ul>
+      <li>Die lokale KI arbeitet <b>ohne Internet</b>. Gespräche bleiben auf deinem PC.</li>
+      <li>Im Internet sucht Milcrid nur, wenn du ausdrücklich danach fragst („such im Internet nach …“).</li>
+      <li><b>Ausschalten, Neustart</b> und <b>Löschen per Sprache</b> gehen nur mit Rückfrage: erst die Frage, dann dein
+        „ja“.</li>
+      <li>Milcrids eigene Programmdateien und sein Gedächtnis öffnet die KI nicht in fremden Programmen.</li>
+      <li>Unter <b>C26SO › Sicherheit</b> gibt es eine <b>Notbremse</b>.</li>
+    </ul>
+
+    <h2 id="hb-update">Update</h2>
+    <p>Gibt es Aktualisierungen, meldet sich Milcrid beim Start mit einem kleinen Hinweis. Unter <b>Update</b> siehst du
+    getrennt: Linux, Programme, den KI-Dienst und Treiber. Treiber und Kernel werden bewusst <b>nicht</b> automatisch
+    angefasst. Beim KI-Dienst wird die alte Version gesichert; mit „Zurück“ holst du sie wieder, falls etwas nicht
+    stimmt.</p>
+
+    <h2 id="hb-ausschalten">Ein- und Ausschalten</h2>
+    <ul>
+      <li><b>Ausschalten:</b> goldener Punkt ganz rechts – oder sag „PC aus“.</li>
+      <li><b>Neustart:</b> goldener Punkt ganz links – oder sag „PC Neustart“.</li>
+      <li>Es geht ein kleines Fenster auf. Ist der <b>Text der Online-KI</b> noch nicht gespeichert, fragt es zuerst
+        „Speichern?“ (Speichern / Nicht speichern). Offene Programme wie LibreOffice stehen als Hinweis darunter – sie
+        fragen beim Schließen selbst, ob gespeichert werden soll.</li>
+      <li>Dann: <b>Neu starten</b> bzw. <b>Ausschalten</b> oder <b>Abbrechen</b> – per Klick oder gesprochen
+        („ja“, „nein“, „speichern“, „nicht speichern“, „abbrechen“).</li>
+      <li>Per Sprache geöffnet bleibt das Fenster 30 Sekunden stehen. Ist es zu, ist die Frage erledigt – ein
+        späteres „ja“ tut nichts mehr.</li>
+      <li>Nach dem Einschalten startet Milcrid von selbst.</li>
+    </ul>
+
+    <h2 id="hb-tasten">Tastaturbelegung</h2>
+    <p>Die Tasten gelten, solange das jeweilige Fenster angeklickt ist. <kbd>Strg</kbd> ist die Steuerungstaste,
+    <kbd>⇧</kbd> die Umschalttaste.</p>
+    <h3 id="hb-tasten-chat">Eingabefeld und Chat</h3>
+    <table>
+      <tr><th>Taste</th><th>Wirkung</th></tr>
+      <tr><td><kbd>Enter</kbd></td><td>Nachricht an Milcrid schicken</td></tr>
+      <tr><td>Mikrofon gedrückt halten</td><td>sprechen; loslassen schickt ab</td></tr>
+    </table>
+    <h3 id="hb-tasten-dm">Datei Manager</h3>
+    <table>
+      <tr><th>Taste</th><th>Wirkung</th></tr>
+      <tr><td>Doppelklick · <kbd>Enter</kbd></td><td>ausgewählte Datei öffnen (Ordner: einfacher Klick)</td></tr>
+      <tr><td><kbd>Entf</kbd></td><td>ausgewählte Einträge in den Papierkorb legen</td></tr>
+      <tr><td><kbd>⇧</kbd>+<kbd>Entf</kbd></td><td>endgültig löschen – mit Rückfrage</td></tr>
+      <tr><td><kbd>F2</kbd></td><td>umbenennen</td></tr>
+      <tr><td><kbd>F5</kbd></td><td>Ordner neu laden</td></tr>
+      <tr><td><kbd>Strg</kbd>+<kbd>A</kbd></td><td>alles auswählen</td></tr>
+      <tr><td><kbd>Strg</kbd>+<kbd>C</kbd> / <kbd>X</kbd> / <kbd>V</kbd></td><td>kopieren / ausschneiden / einfügen</td></tr>
+      <tr><td><kbd>Strg</kbd>+Klick</td><td>mehrere Einträge auswählen</td></tr>
+      <tr><td><kbd>←</kbd> Rücktaste · <kbd>Alt</kbd>+<kbd>↑</kbd></td><td>eine Ebene höher</td></tr>
+      <tr><td><kbd>Alt</kbd>+<kbd>←</kbd> / <kbd>Alt</kbd>+<kbd>→</kbd></td><td>zurück / vor</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>Auswahl aufheben · im Suchfeld: Suche leeren</td></tr>
+      <tr><td><kbd>Enter</kbd> / <kbd>Esc</kbd></td><td>beim Umbenennen: bestätigen / abbrechen</td></tr>
+    </table>
+    <h3 id="hb-tasten-editor">Milcrid Editor</h3>
+    <table>
+      <tr><th>Taste</th><th>Wirkung</th></tr>
+      <tr><td><kbd>Strg</kbd>+<kbd>S</kbd></td><td>speichern</td></tr>
+      <tr><td><kbd>Strg</kbd>+<kbd>⇧</kbd>+<kbd>S</kbd></td><td>speichern unter</td></tr>
+      <tr><td><kbd>Strg</kbd>+<kbd>O</kbd></td><td>Datei öffnen</td></tr>
+      <tr><td><kbd>Strg</kbd>+<kbd>N</kbd></td><td>neuer Reiter</td></tr>
+      <tr><td><kbd>Strg</kbd>+<kbd>Z</kbd></td><td>rückgängig</td></tr>
+      <tr><td><kbd>Tab</kbd></td><td>vier Leerzeichen einrücken</td></tr>
+      <tr><td><kbd>Enter</kbd></td><td>neue Zeile mit derselben Einrückung</td></tr>
+      <tr><td>Mittlere Maustaste auf einen Reiter</td><td>Reiter schließen</td></tr>
+    </table>
+    <h3 id="hb-tasten-bild">Milcrid Bildbetrachter</h3>
+    <table>
+      <tr><th>Taste</th><th>Wirkung</th></tr>
+      <tr><td><kbd>←</kbd> / <kbd>→</kbd></td><td>vorheriges / nächstes Bild im Ordner</td></tr>
+      <tr><td><kbd>+</kbd> / <kbd>−</kbd> · Mausrad</td><td>vergrößern / verkleinern</td></tr>
+      <tr><td><kbd>0</kbd></td><td>ganz ins Fenster einpassen</td></tr>
+      <tr><td><kbd>1</kbd></td><td>Originalgröße (100 %)</td></tr>
+      <tr><td><kbd>R</kbd> / <kbd>⇧</kbd>+<kbd>R</kbd></td><td>nach rechts / nach links drehen</td></tr>
+      <tr><td><kbd>Strg</kbd>+<kbd>S</kbd> · <kbd>Strg</kbd>+<kbd>⇧</kbd>+<kbd>S</kbd></td><td>speichern · speichern unter</td></tr>
+      <tr><td><kbd>Strg</kbd>+<kbd>O</kbd></td><td>Bild öffnen</td></tr>
+      <tr><td>Doppelklick</td><td>zwischen „ganz sehen“ und 100 % wechseln</td></tr>
+    </table>
+    <h3 id="hb-tasten-video">Milcrid Video</h3>
+    <table>
+      <tr><th>Taste</th><th>Wirkung</th></tr>
+      <tr><td><kbd>Leertaste</kbd></td><td>abspielen / Pause</td></tr>
+      <tr><td><kbd>←</kbd> / <kbd>→</kbd></td><td>5 Sekunden zurück / vor</td></tr>
+      <tr><td><kbd>F</kbd></td><td>Vollbild (zurück mit <kbd>Esc</kbd>)</td></tr>
+      <tr><td><kbd>M</kbd></td><td>Ton aus / an</td></tr>
+      <tr><td><kbd>Bild ↑</kbd> / <kbd>Bild ↓</kbd></td><td>vorherige / nächste Datei im Ordner</td></tr>
+      <tr><td><kbd>Strg</kbd>+<kbd>O</kbd></td><td>Datei öffnen</td></tr>
+    </table>
+
+    <h2 id="hb-hilfe">Wenn etwas nicht klappt</h2>
+    <table>
+      <tr><th>Was passiert</th><th>Was hilft</th></tr>
+      <tr><td>Milcrid versteht ein Wort immer falsch</td><td>in die <a href="#hb-lernen">Wörterliste</a> eintragen</td></tr>
+      <tr><td>Milcrid tut etwas anderes als gewünscht</td><td>👎 unter der Antwort – wird mit Bildschirmfoto notiert. Sag es danach anders, und wenn es klappt: „das war richtig“.</td></tr>
+      <tr><td>Eine Datei geht nicht auf</td><td>Rechtsklick › <a href="#hb-oeffnen">Öffnen mit</a> und ein anderes Programm wählen</td></tr>
+      <tr><td>Ein Knopf tut nichts, etwas hängt</td><td><b>System Test</b> im Portal laufen lassen</td></tr>
+      <tr><td>Alles hängt</td><td>goldener Punkt ganz links: <b>Neustart</b></td></tr>
+    </table>
+
+    <h2 id="hb-begriffe">Begriffe</h2>
+    <table>
+      <tr><th>Begriff</th><th>Bedeutung</th></tr>
+      <tr><td>Startbildschirm</td><td>der ganze Milcrid-Bildschirm mit Knöpfen, Eingabefeld und Fenstern</td></tr>
+      <tr><td>Portal</td><td>die Übersicht aller Bereiche – blauer Knopf „Portal“ rechts unten</td></tr>
+      <tr><td>Thema</td><td>deine eigene Sammlung von Dateien und Programmen</td></tr>
+      <tr><td>Extras</td><td>Milcrids eigene Programme, einzeln abschaltbar</td></tr>
+      <tr><td>Icon-Fenster</td><td>die Ablage für weggeklappte Fenster</td></tr>
+      <tr><td>Codewort</td><td>das Wort, auf das Milcrid ohne Knopfdruck hört</td></tr>
+      <tr><td>Merkliste</td><td>Sätze, die Milcrid sich gemerkt hat und sofort ausführt</td></tr>
+      <tr><td>Wörterliste</td><td>Korrekturen für Wörter, die die Spracherkennung falsch hört</td></tr>
+      <tr><td>Sprachmodell</td><td>die eigentliche KI – ein Programm, das Sprache versteht und erzeugt</td></tr>
+      <tr><td>Lokal</td><td>auf deinem eigenen PC, nicht im Internet</td></tr>
+      <tr><td>Standardprogramm</td><td>das Programm, mit dem eine Dateiart normalerweise aufgeht</td></tr>
+      <tr><td>C26SO</td><td>Milcrids Wächter: Zeitpläne, Sicherheit, Werkzeuge</td></tr>
+    </table>
+    <p class="hb-unter" style="margin-top:30px; border:none">Milcrid wird weiterentwickelt. Wenn etwas anders aussieht als hier beschrieben, gilt der Bildschirm.</p>
+  </article>
+  <button class="hb-nachoben" id="hbNachOben" type="button" title="Zum Anfang">↑ nach oben</button>
+  </div>
+</div>
+</div>

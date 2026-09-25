@@ -1,0 +1,94 @@
+<!--
+  Milcrid-App: Editor (Klaus-Wunsch 2026-09-24)
+  "so was wie bei Windows, wo man schnell einfach was schreiben kann oder
+  py-Dateien usw. oeffnen kann" - mehrere Reiter, Zeilennummern, Speichern.
+  Nachgeladen von milcrid_portal.html (milcridAppLaden), "ed"-Vorsilbe fuer
+  alle Klassen und IDs. Dateizugriff ueber window.milcrid.editorDateiLesen /
+  editorDateiSchreiben (main.js).
+-->
+<style>
+  .ed [hidden]{display:none !important}
+  .ed-huelle{width:100%; height:100%; container-type:size}
+  .ed{display:flex; flex-direction:column; gap:10px; width:100%; height:100%; padding:12px 14px;
+      box-sizing:border-box; font-family:var(--sans); color:var(--text)}
+
+  .ed-leiste{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+  .ed-knopf{
+    padding:6px 14px; border-radius:999px; cursor:pointer; white-space:nowrap;
+    border:1.5px solid var(--surface-line); background:rgba(255,255,255,.05);
+    color:var(--text); font-family:var(--sans); font-size:13px;
+  }
+  .ed-knopf:hover{border-color:var(--gold-line)}
+  .ed-knopf.haupt{border-color:var(--gold-line); color:var(--btn-text); font-weight:700;
+    background:radial-gradient(circle at 50% 22%, var(--btn-light) 0%, var(--btn) 45%, var(--btn-dark) 100%)}
+  .ed-knopf.an{border-color:var(--gold-line); color:var(--gold)}
+  .ed-leiste-rechts{margin-left:auto; display:flex; gap:8px}
+
+  .ed-reiter{display:flex; gap:4px; overflow-x:auto; flex:0 0 auto; padding-bottom:2px}
+  .ed-reiter::-webkit-scrollbar{height:6px}
+  .ed-reiter::-webkit-scrollbar-thumb{background:var(--surface-line); border-radius:3px}
+  .ed-reiter-eintrag{
+    display:flex; align-items:center; gap:6px; flex:0 0 auto; max-width:220px;
+    padding:6px 8px 6px 12px; border-radius:10px 10px 0 0; cursor:pointer;
+    background:var(--surface); border:1px solid var(--surface-line); border-bottom:none;
+    font-size:13px; color:var(--muted);
+  }
+  .ed-reiter-eintrag:hover{color:var(--text)}
+  .ed-reiter-eintrag.aktiv{color:var(--text); background:rgba(255,255,255,.08); box-shadow:inset 0 2px 0 var(--gold-line)}
+  .ed-reiter-name{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .ed-reiter-punkt{color:var(--gold); font-size:15px; line-height:1}
+  .ed-reiter-zu{
+    border:none; background:none; color:var(--muted); cursor:pointer; font-size:14px;
+    padding:0 4px; border-radius:6px; line-height:1.2;
+  }
+  .ed-reiter-zu:hover{color:var(--text); background:var(--accent-dim)}
+  .ed-reiter-zu.scharf{color:#ffb199; font-size:12px}
+  .ed-reiter-neu{flex:0 0 auto; padding:4px 12px; border-radius:10px 10px 0 0; cursor:pointer;
+    background:none; border:1px dashed var(--surface-line); border-bottom:none; color:var(--muted); font-size:15px}
+  .ed-reiter-neu:hover{color:var(--gold); border-color:var(--gold-line)}
+
+  .ed-flaeche{flex:1 1 auto; min-height:0; display:flex; border:1px solid var(--surface-line);
+    border-radius:0 10px 10px 10px; background:rgba(0,0,0,.18); overflow:hidden}
+  .ed-zeilen{
+    flex:0 0 auto; margin:0; padding:10px 8px 10px 10px; min-width:2.5em; text-align:right;
+    font-family:var(--mono); font-size:14px; line-height:1.5; color:var(--faint);
+    background:rgba(255,255,255,.025); border-right:1px solid var(--surface-line);
+    overflow:hidden; user-select:none; white-space:pre;
+  }
+  .ed-text{
+    flex:1 1 auto; min-width:0; margin:0; padding:10px 12px; border:none; outline:none; resize:none;
+    background:transparent; color:var(--text); caret-color:var(--gold);
+    font-family:var(--mono); font-size:14px; line-height:1.5; tab-size:4;
+  }
+  .ed-text.umbruch{font-family:var(--sans); font-size:15px}
+
+  .ed-status{display:flex; flex-wrap:wrap; gap:4px 14px; font-size:12px; color:var(--muted); flex:0 0 auto; min-height:1.3em}
+  .ed-status-pfad{flex:1 1 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .ed-status-rechts{flex:0 0 auto; white-space:nowrap}
+  .ed-status .fehler{color:#ff9d8a}
+  .ed-status .erfolg{color:#8fe3a1}
+</style>
+
+<div class="ed-huelle">
+<div class="ed">
+  <div class="ed-leiste">
+    <button class="ed-knopf" id="edNeu" type="button" title="Neue leere Datei (Strg+N)">Neu</button>
+    <button class="ed-knopf" id="edOeffnen" type="button" title="Datei öffnen (Strg+O)">Öffnen</button>
+    <button class="ed-knopf haupt" id="edSpeichern" type="button" title="Speichern (Strg+S)">Speichern</button>
+    <button class="ed-knopf" id="edSpeichernUnter" type="button" title="Unter neuem Namen speichern (Strg+Umschalt+S)">Speichern unter</button>
+    <div class="ed-leiste-rechts">
+      <button class="ed-knopf" id="edUmbruch" type="button" title="Lange Zeilen umbrechen – für Text. Für Programmcode aus, dann mit Zeilennummern.">Zeilenumbruch</button>
+    </div>
+  </div>
+  <div class="ed-reiter" id="edReiter"></div>
+  <div class="ed-flaeche">
+    <pre class="ed-zeilen" id="edZeilen" aria-hidden="true">1</pre>
+    <textarea class="ed-text" id="edText" spellcheck="false" wrap="off"></textarea>
+  </div>
+  <div class="ed-status">
+    <span class="ed-status-pfad" id="edPfad"></span>
+    <span class="ed-status-rechts" id="edMeldung"></span>
+    <span class="ed-status-rechts" id="edPosition"></span>
+  </div>
+</div>
+</div>

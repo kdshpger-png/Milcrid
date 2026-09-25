@@ -1,0 +1,89 @@
+<!--
+  Milcrid-App: Notizen (Klaus-Brainstorm 2026-09-14)
+  Notizen einfach speichern - und auf Wunsch einem Datum oder einem Termin
+  zuordnen, dann stehen sie auch im Terminplaner. Nachgeladen von
+  milcrid_portal.html, "nz"-Vorsilbe, Daten nur ueber window.milcridPlaner.
+-->
+<style>
+  /* hidden muss gewinnen: viele Teile hier haben display:flex, und das Portal
+     hat keine allgemeine [hidden]-Regel. */
+  .nz [hidden]{display:none !important}
+  /* Huelle = Container fuer die Abfrage unten. Auf .nz selbst wirkte sie nicht
+     (erstes Bildschirmfoto 15.09.: zwei Spalten im schmalen Fenster, Rollbalken) -
+     ein Element kann nur seine Vorfahren abfragen, nie sich selbst. */
+  .nz-huelle{width:100%; height:100%; container-type:size}
+  .nz{display:flex; gap:14px; width:100%; height:100%; padding:14px; box-sizing:border-box;
+      font-family:var(--sans); color:var(--text)}
+  .nz-spalte{display:flex; flex-direction:column; gap:10px; min-height:0}
+  .nz-links{flex:0 0 38%}
+  .nz-rechts{flex:1 1 auto; overflow:auto; background:var(--surface); border:1px solid var(--surface-line);
+             border-radius:14px; padding:14px 16px}
+  @container (max-width: 600px){
+    .nz{flex-direction:column; overflow:auto}
+    .nz-links{flex:0 0 auto; max-height:40%}
+    .nz-rechts{flex:0 0 auto}
+  }
+  .nz-kopf{display:flex; gap:8px}
+  .nz-feld, .nz-auswahl, .nz-text{
+    background:rgba(255,255,255,.04); border:1px solid var(--surface-line); border-radius:9px;
+    padding:7px 10px; color:var(--text); font-family:var(--sans); font-size:13px; outline:none;
+    box-sizing:border-box; min-width:0;
+  }
+  .nz-feld:focus, .nz-auswahl:focus, .nz-text:focus{border-color:var(--accent)}
+  .nz-auswahl option{background:#0b1a3a}
+  .nz-text{resize:vertical; min-height:220px; width:100%; line-height:1.5}
+  #nzSuche{flex:1 1 auto}
+  .nz-knopf{
+    padding:7px 14px; border-radius:999px; cursor:pointer; white-space:nowrap;
+    border:1.5px solid var(--surface-line); background:rgba(255,255,255,.05);
+    color:var(--text); font-family:var(--sans); font-size:13px;
+  }
+  .nz-knopf:hover{border-color:var(--gold-line)}
+  .nz-knopf.haupt{border-color:var(--gold-line); color:var(--btn-text); font-weight:700;
+    background:radial-gradient(circle at 50% 22%, var(--btn-light) 0%, var(--btn) 45%, var(--btn-dark) 100%)}
+  .nz-knopf.warnung{border-color:#e0604a; color:#ffb199}
+  .nz-liste{flex:1 1 auto; overflow:auto; display:flex; flex-direction:column; gap:4px; padding-right:4px}
+  .nz-eintrag{padding:8px 10px; border-radius:10px; cursor:pointer; background:var(--surface); border:1px solid var(--surface-line)}
+  .nz-eintrag:hover{background:var(--accent-dim)}
+  .nz-eintrag.gewaehlt{box-shadow:inset 0 0 0 2px var(--gold-line)}
+  .nz-eintrag-titel{font-size:13.5px; font-weight:600; word-break:break-word}
+  .nz-eintrag-unter{font-size:11.5px; color:var(--muted); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .nz-leer{color:var(--muted); font-size:13px; padding:8px 2px}
+  .nz-form{display:flex; flex-direction:column; gap:10px}
+  .nz-form label{display:flex; flex-direction:column; gap:4px; font-size:12px; color:var(--muted)}
+  .nz-reihe{display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end}
+  .nz-reihe > label{flex:1 1 160px}
+  .nz-knoepfe{display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap; border-top:1px solid var(--surface-line); padding-top:12px}
+  .nz-status{font-size:12.5px; min-height:1.2em; text-align:right}
+  .nz-status.fehler{color:#ff9d8a}
+  .nz-status.erfolg{color:#8fe3a1}
+</style>
+
+<div class="nz-huelle">
+<div class="nz">
+  <div class="nz-spalte nz-links">
+    <div class="nz-kopf">
+      <input class="nz-feld" id="nzSuche" type="search" placeholder="Notizen durchsuchen …">
+      <button class="nz-knopf haupt" id="nzNeu" type="button">+ Neu</button>
+    </div>
+    <div class="nz-liste" id="nzListe"></div>
+  </div>
+  <div class="nz-spalte nz-rechts">
+    <div class="nz-leer" id="nzLeer">Links eine Notiz auswählen oder mit „+ Neu“ anlegen.</div>
+    <form class="nz-form" id="nzForm" hidden>
+      <label>Titel<input class="nz-feld" id="nzTitel" maxlength="200" placeholder="leer = erste Zeile des Textes"></label>
+      <label>Text<textarea class="nz-text" id="nzText" maxlength="20000"></textarea></label>
+      <div class="nz-reihe">
+        <label>An einem Datum (erscheint im Terminplaner)<input class="nz-feld" id="nzDatum" type="date"></label>
+        <label>Gehört zu Termin<select class="nz-auswahl" id="nzTermin"></select></label>
+      </div>
+      <div class="nz-knoepfe">
+        <button class="nz-knopf" id="nzTerminZeigen" type="button">Termin zeigen</button>
+        <button class="nz-knopf warnung" id="nzLoeschen" type="button">Löschen</button>
+        <button class="nz-knopf haupt" type="submit">Speichern</button>
+      </div>
+      <div class="nz-status" id="nzStatus"></div>
+    </form>
+  </div>
+</div>
+</div>

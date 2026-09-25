@@ -1,0 +1,15 @@
+FROM qwen2.5:7b
+
+PARAMETER repeat_last_n 128
+PARAMETER repeat_penalty 1.1
+PARAMETER temperature 0.3
+PARAMETER top_k 40
+PARAMETER top_p 0.9
+# 2026-09-07 von 16384 auf 32768 erhoeht. Gemessen: der Startkontext ist
+# ~4.456 Token gross (Systemprompt ~3.986 davon, Kurzzeit nur ~470) - bei
+# 16384 waren also schon 27% belegt, bevor Klaus das erste Wort sagt. Der
+# Systemprompt waechst mit jedem neuen Werkzeug weiter (FESTE_TOOLS +
+# WERKZEUG_DETAILS machen ueber die Haelfte davon aus). Mehr Fenster ist
+# hier billiger als Inhalt wegzuschneiden: der Grafikspeicher ist da,
+# der Wahrheitskern im Systemprompt soll bleiben.
+PARAMETER num_ctx 32768

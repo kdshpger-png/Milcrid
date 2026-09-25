@@ -1,0 +1,40 @@
+<svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b3f9a"/>
+      <stop offset="55%" stop-color="#062a72"/>
+      <stop offset="100%" stop-color="#021231"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fff7c2"/>
+      <stop offset="25%" stop-color="#ffe27a"/>
+      <stop offset="45%" stop-color="#f6c33b"/>
+      <stop offset="65%" stop-color="#b27a08"/>
+      <stop offset="80%" stop-color="#f4c447"/>
+      <stop offset="100%" stop-color="#b88615"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="128" height="128" rx="28" fill="url(#bg)"/>
+
+  <g fill="url(#gold)">
+    <rect x="45" y="14" width="7" height="16" rx="3.5"/>
+    <rect x="76" y="14" width="7" height="16" rx="3.5"/>
+  </g>
+
+  <rect x="28" y="26" width="72" height="80" rx="11" fill="url(#gold)"/>
+  <rect x="33" y="31" width="62" height="70" rx="8" fill="#0b1a3a"/>
+  <rect x="33" y="31" width="62" height="17" rx="8" fill="url(#gold)"/>
+
+  <g fill="#f7f4ea">
+    <rect x="40" y="57" width="9" height="9" rx="2.5"/>
+    <rect x="55" y="57" width="9" height="9" rx="2.5"/>
+    <rect x="70" y="57" width="9" height="9" rx="2.5"/>
+    <rect x="40" y="72" width="9" height="9" rx="2.5"/>
+    <rect x="70" y="72" width="9" height="9" rx="2.5"/>
+    <rect x="40" y="87" width="9" height="9" rx="2.5"/>
+    <rect x="55" y="87" width="9" height="9" rx="2.5"/>
+    <rect x="70" y="87" width="9" height="9" rx="2.5"/>
+  </g>
+  <rect x="55" y="72" width="9" height="9" rx="2.5" fill="#f6c33b"/>
+</svg>

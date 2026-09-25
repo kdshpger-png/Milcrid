@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Milcrid
+Comment=Milcrid KI-Assistent - Desktop-App
+Exec=/home/miluh/Milcrid-App/node_modules/electron/dist/electron /home/miluh/Milcrid-App
+Icon=/home/miluh/Milcrid-App/icon-256.png
+Terminal=false
+Categories=Utility;
+StartupWMClass=Milcrid-App

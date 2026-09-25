@@ -1,0 +1,107 @@
+<!--
+  Milcrid-App: Skizze (Klaus, 16.09.2026)
+  Kleines Malprogramm: eine Idee aufzeichnen (z. B. wie eine Webseite aussehen
+  soll), dazuschreiben, was daraus werden soll, und beides der lokalen KI oder
+  der Online-KI geben. Aufbau nach Geminis Tkinter-Entwurf vom 15.09. (Klaus:
+  "vom Aufbau Handling war das ok"), die dort gefundenen Fehler vermieden.
+  Nachgeladen von milcrid_portal.html, "sk"-Vorsilbe, Daten nur ueber
+  window.milcridSkizze.
+-->
+<style>
+  .sk [hidden]{display:none !important}
+  .sk-huelle{width:100%; height:100%; container-type:size}
+  .sk{display:flex; flex-direction:column; gap:8px; width:100%; height:100%; padding:10px 12px;
+      box-sizing:border-box; font-family:var(--sans); color:var(--text); outline:none}
+  .sk-leiste{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+  .sk-gruppe{display:flex; align-items:center; gap:5px; padding:3px 8px; border-radius:10px;
+    background:rgba(255,255,255,.035); border:1px solid var(--surface-line)}
+  .sk-klein{font-size:11.5px; color:var(--muted)}
+  .sk-farbe{width:22px; height:22px; border-radius:50%; border:2px solid rgba(255,255,255,.25); cursor:pointer; padding:0}
+  .sk-farbe.gewaehlt{border-color:var(--gold); box-shadow:0 0 0 2px rgba(216,177,84,.35)}
+  .sk-eigene{width:26px; height:24px; padding:0; border:none; background:none; cursor:pointer}
+  .sk-staerke{width:90px}
+  .sk-knopf{padding:5px 11px; border-radius:999px; cursor:pointer; white-space:nowrap;
+    border:1.5px solid var(--surface-line); background:rgba(255,255,255,.05); color:var(--text);
+    font-family:var(--sans); font-size:12.5px}
+  .sk-knopf:hover{border-color:var(--gold-line)}
+  .sk-knopf:disabled{opacity:.45; cursor:not-allowed}
+  .sk-knopf.an{border-color:var(--gold-line); background:var(--accent-dim)}
+  .sk-knopf.warnung{border-color:#e0604a; color:#ffb199}
+  .sk-knopf.haupt{border-color:var(--gold-line); color:var(--btn-text); font-weight:700;
+    background:radial-gradient(circle at 50% 22%, var(--btn-light) 0%, var(--btn) 45%, var(--btn-dark) 100%)}
+
+  .sk-mitte{flex:1 1 auto; min-height:0; display:flex; gap:8px}
+  .sk-werkzeuge{flex:0 0 auto; display:flex; flex-direction:column; gap:5px; overflow-y:auto; padding-right:2px}
+  .sk-werkzeug{display:flex; align-items:center; gap:7px; padding:6px 10px; border-radius:10px; cursor:pointer;
+    border:1.5px solid var(--surface-line); background:rgba(255,255,255,.04); color:var(--text);
+    font-family:var(--sans); font-size:12.5px; text-align:left; white-space:nowrap}
+  .sk-werkzeug:hover{border-color:var(--gold-line)}
+  .sk-werkzeug.gewaehlt{border-color:var(--gold-line); color:var(--btn-text); font-weight:700;
+    background:radial-gradient(circle at 50% 22%, var(--btn-light) 0%, var(--btn) 45%, var(--btn-dark) 100%)}
+  .sk-werkzeug span{width:18px; text-align:center}
+  .sk-flaeche{position:relative; flex:1 1 auto; min-width:0; background:#fff; border-radius:10px; overflow:hidden;
+    border:1px solid var(--gold-line)}
+  .sk-flaeche canvas{position:absolute; inset:0; width:100%; height:100%; touch-action:none}
+  .sk-textfeld{position:absolute; min-width:120px; padding:2px 4px; border:1.5px dashed #2f7bff; background:rgba(255,255,255,.95);
+    font-family:var(--sans); outline:none; z-index:2}
+
+  .sk-unten{display:flex; gap:8px; align-items:stretch}
+  .sk-beschreibung{flex:1 1 auto; min-height:52px; max-height:110px; resize:vertical; box-sizing:border-box;
+    background:rgba(255,255,255,.04); border:1px solid var(--surface-line); border-radius:10px; padding:7px 10px;
+    color:var(--text); font-family:var(--sans); font-size:13px; line-height:1.4; outline:none}
+  .sk-beschreibung:focus, .sk-feld:focus{border-color:var(--accent)}
+  .sk-senden{display:flex; flex-direction:column; gap:6px; justify-content:center}
+  .sk-feld, .sk-auswahl{background:rgba(255,255,255,.04); border:1px solid var(--surface-line); border-radius:9px;
+    padding:5px 9px; color:var(--text); font-family:var(--sans); font-size:12.5px; outline:none; min-width:0}
+  .sk-auswahl option{background:#0b1a3a}
+  .sk-status{font-size:12.5px; min-height:1.2em; margin-left:auto; text-align:right}
+  .sk-status.fehler{color:#ff9d8a}
+  .sk-status.erfolg{color:#8fe3a1}
+  @container (max-width: 620px){
+    .sk-werkzeug b{display:none}
+    .sk-unten{flex-direction:column}
+    .sk-senden{flex-direction:row}
+    .sk-status{margin-left:0; text-align:left; flex-basis:100%}
+  }
+</style>
+
+<div class="sk-huelle">
+<div class="sk" id="skApp" tabindex="0">
+  <div class="sk-leiste">
+    <div class="sk-gruppe" id="skFarben"><span class="sk-klein">Farbe</span></div>
+    <div class="sk-gruppe">
+      <span class="sk-klein">Stärke</span>
+      <input class="sk-staerke" id="skStaerke" type="range" min="1" max="20" value="3">
+      <span class="sk-klein" id="skStaerkeWert">3</span>
+    </div>
+    <button class="sk-knopf" id="skFuellung" type="button" title="Rechteck und Ellipse gefüllt zeichnen">Füllung</button>
+    <button class="sk-knopf an" id="skRaster" type="button" title="Raster zeigen und daran ausrichten">Raster</button>
+    <button class="sk-knopf" id="skZurueck" type="button" title="Rückgängig (Strg+Z)">↶</button>
+    <button class="sk-knopf" id="skVor" type="button" title="Wiederholen (Strg+Y)">↷</button>
+    <button class="sk-knopf warnung" id="skLeeren" type="button">Alles löschen</button>
+  </div>
+
+  <div class="sk-mitte">
+    <div class="sk-werkzeuge" id="skWerkzeuge"></div>
+    <div class="sk-flaeche" id="skFlaeche"><canvas id="skCanvas"></canvas></div>
+  </div>
+
+  <div class="sk-leiste">
+    <input class="sk-feld" id="skName" maxlength="80" placeholder="Name der Skizze" style="width:180px">
+    <button class="sk-knopf" id="skSpeichern" type="button">Speichern</button>
+    <select class="sk-auswahl" id="skListe" title="Gespeicherte Skizze öffnen" style="max-width:200px"></select>
+    <button class="sk-knopf warnung" id="skLoeschen" type="button" title="Die links gewählte gespeicherte Skizze löschen" hidden>Löschen</button>
+    <button class="sk-knopf" id="skNeu" type="button">Neu</button>
+    <button class="sk-knopf" id="skOrdner" type="button">Ordner</button>
+    <div class="sk-status" id="skStatus"></div>
+  </div>
+  <div class="sk-unten">
+    <textarea class="sk-beschreibung" id="skBeschreibung" maxlength="4000"
+      placeholder="Was soll daraus werden? z. B. „Mach daraus eine Webseite für einen Bäcker“"></textarea>
+    <div class="sk-senden">
+      <button class="sk-knopf haupt" id="skLokal" type="button" title="Die lokale KI sieht sich die Skizze an – bleibt auf diesem PC">🧠 An lokale KI</button>
+      <button class="sk-knopf haupt" id="skOnline" type="button" title="Über das Fenster Online KI – geht nach draußen">🌐 An Online KI</button>
+    </div>
+  </div>
+</div>
+</div>

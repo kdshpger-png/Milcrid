@@ -1,0 +1,149 @@
+<!--
+  Milcrid-App: Rechner
+  Wird ueber den Milcrid App Store heruntergeladen und von milcrid_portal.html
+  per Electron-Bruecke (window.milcrid.appDateiLesen) nachgeladen - kein
+  eigenes <html>/<head>, nutzt die Farbvariablen des Portals mit.
+-->
+<style>
+  /* Feld mit Rand, das das ganze Fenster ausfuellt (Klaus-Wunsch
+     2026-08-21, zweite Praezisierung: "füllt nicht das ganze fenster aus
+     mit rand gleich drumherum") - .rechner-huelle nimmt die volle
+     Fenster-Flaeche und zentriert .rechner-card darin (Flexbox, dafuer
+     klappt "oben/unten Rand" ueberhaupt erst - normales Blockmargin
+     zentriert nur horizontal). container-type macht die cq-Einheiten
+     unten moeglich (skalieren an DIESEM Feld, nicht am ganzen Bildschirm
+     wie vw/vh es tun). grid-auto-rows:1fr laesst die Tasten mitwachsen, wenn
+     das Feld hoeher wird, statt nur oben zu haengen.
+     Klaus-Fund 2026-08-27: "je nach Größe kommt rechts ein rauf-runter
+     Balken, man sieht den unteren Teil nicht" - Ursache war, dass Schrift/
+     Polster der Tasten bisher nur an der BREITE skalierten (cqw). Bei einem
+     eher niedrigen/breiten Fenster blieben sie dadurch zu hoch fuer den
+     tatsaechlich verfuegbaren Platz, die Tasten liefen unten über die Karte
+     hinaus, und overflow:auto zeigte statt eines Layoutfehlers nur den
+     Rollbalken. Fix: container-type:size (statt nur inline-size) plus
+     cqmin (= die kleinere der beiden Seiten) statt cqw ueberall - damit
+     bestimmt IMMER die knappere Dimension die Groesse, nicht nur die Breite. */
+  .rechner-huelle{width:100%; height:100%; display:flex; align-items:center; justify-content:center}
+  .rechner-card{
+    width:88%; height:88%;
+    background:var(--surface);
+    border:1px solid var(--surface-line);
+    border-radius:16px;
+    padding:clamp(4px, 2cqmin, 14px) clamp(8px, 3cqmin, 16px);
+    display:flex; flex-direction:column;
+    overflow:auto;
+    container-type:size;
+  }
+  .rechner-display{
+    text-align:right;
+    font-family:var(--sans);
+    font-weight:700;
+    font-size:clamp(14px, 9cqmin, 100px);
+    color:var(--text);
+    padding:clamp(2px, 2cqmin, 8px) 6px clamp(1px, 1cqmin, 4px);
+    /* Etwas mehr Abstand zu den Tasten darunter (Klaus-Wunsch 2026-08-21:
+       "die zahlen etwas höher setzen... abstand zu den eingabe buttons") */
+    margin-bottom:clamp(3px, 3cqmin, 30px);
+    word-break:break-all;
+    min-height:1.2em;
+  }
+  .rechner-keys{
+    display:grid;
+    grid-template-columns:repeat(5, 1fr);
+    /* minmax(0, 1fr) statt 1fr (24.09.2026): mit 1fr durfte eine Reihe nicht
+       kleiner werden als Schrift + Polster ihrer Tasten - wurde es eng, lief
+       die letzte Reihe unter die Tasten, und "96 + 3 = 99" stand IN der 0-
+       und der =-Taste (Klaus-Fund). Jetzt teilen sich die Reihen den Platz. */
+    grid-auto-rows:minmax(0, 1fr);
+    gap:clamp(2px, 1.5cqmin, 6px);
+    flex:1 1 auto;
+    min-height:0;
+  }
+  .rechner-key{
+    border:1px solid rgba(255,255,255,.1);
+    border-radius:9px;
+    padding:0;   /* Hoehe kommt aus der Reihe (siehe oben), nicht aus dem Polster */
+    min-height:0;
+    font-family:var(--sans);
+    font-size:clamp(10px, 4.5cqmin, 40px);
+    font-weight:600;
+    cursor:pointer;
+    background:linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,.02));
+    box-shadow:0 2px 5px rgba(0,0,0,.35), inset 0 1px 1px rgba(255,255,255,.15), inset 0 -2px 3px rgba(0,0,0,.35);
+    color:var(--text);
+    transition:transform .1s;
+  }
+  .rechner-key:hover{animation:sbPuls 1.3s ease-in-out infinite}
+  .rechner-key:active{transform:scale(.96)}
+  .rechner-key.fn{background:linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.05)); color:var(--muted)}
+  .rechner-key.op{
+    background:radial-gradient(circle at 50% 22%, var(--btn-light) 0%, var(--btn) 45%, var(--btn-dark) 100%);
+    border-color:var(--gold-line);
+    color:var(--btn-text); font-weight:700;
+  }
+  .rechner-key.eq{
+    background:linear-gradient(180deg, #fff4b8, #d8a31a);
+    border-color:var(--gold-line);
+    color:#1a1305;
+  }
+  .rechner-key.zero{grid-column:span 2}
+  /* Die Verlaufsliste unter den Tasten ist am 25.09.2026 entfernt (Klaus: Rechenweg
+     und Ergebnis stehen oben schon - unten doppelt). */
+  /* ---- Erweiterung (Klaus-Brainstorm 2026-09-14): Speicher,
+     Rueckschritt, Wurzel/Quadrat/Kehrwert, Tastatur. Die Rechnung steht klein
+     ueber der Zahl, damit man sieht, was gerade gerechnet wird. ---- */
+  .rechner-kopf{display:flex; justify-content:space-between; align-items:flex-end; gap:8px;
+                font-family:var(--sans); font-size:clamp(9px, 3.2cqmin, 20px); color:var(--muted);
+                padding:0 6px; min-height:1.3em}
+  .rechner-speicher{color:var(--gold); font-weight:700}
+  .rechner-key.mem{font-size:clamp(8px, 3.4cqmin, 28px); color:var(--muted)}
+  .rechner-huelle:focus{outline:none}
+  /* Goldener Rahmen, solange der Rechner aktiv ist - egal ob gerade eine Taste
+     oder die Huelle den Fokus hat. Vorher nur :focus-within der Karte: jeder
+     Klick gab den Fokus kurz an die Taste (gold) und rechner.js holte ihn
+     gleich zur Huelle AUSSERHALB der Karte zurueck (nicht gold) - der Rahmen
+     blinkte bei jedem Tastendruck (Klaus-Fund 24.09.2026). */
+  .rechner-card:focus-within, .rechner-huelle:focus .rechner-card{border-color:var(--gold-line)}
+</style>
+
+<div class="rechner-huelle" id="rechnerHuelle" tabindex="0">
+<div class="rechner-card">
+  <div class="rechner-kopf"><span class="rechner-speicher" id="rechnerSpeicherZeichen"></span><span id="rechnerRechnung"></span></div>
+  <div class="rechner-display" id="rechnerDisplay">0</div>
+  <div class="rechner-keys">
+    <button class="rechner-key fn mem" data-action="mc" type="button" title="Speicher löschen">MC</button>
+    <button class="rechner-key fn mem" data-action="mr" type="button" title="Speicher abrufen">MR</button>
+    <button class="rechner-key fn mem" data-action="mplus" type="button" title="Zum Speicher addieren">M+</button>
+    <button class="rechner-key fn mem" data-action="mminus" type="button" title="Vom Speicher abziehen">M−</button>
+    <button class="rechner-key fn" data-action="back" type="button" title="Letzte Ziffer löschen (Rücktaste)">⌫</button>
+
+    <button class="rechner-key fn" data-action="sqrt" type="button" title="Wurzel">√</button>
+    <button class="rechner-key fn" data-action="square" type="button" title="Quadrat">x²</button>
+    <button class="rechner-key fn" data-action="inverse" type="button" title="Kehrwert">1/x</button>
+    <button class="rechner-key fn" data-action="percent" type="button" title="Prozent (200 + 10 % = 220)">%</button>
+    <button class="rechner-key op" data-op="÷" type="button">÷</button>
+
+    <button class="rechner-key" data-digit="7" type="button">7</button>
+    <button class="rechner-key" data-digit="8" type="button">8</button>
+    <button class="rechner-key" data-digit="9" type="button">9</button>
+    <button class="rechner-key op" data-op="×" type="button">×</button>
+    <button class="rechner-key fn" data-action="clear" type="button" title="Alles löschen (Esc)">C</button>
+
+    <button class="rechner-key" data-digit="4" type="button">4</button>
+    <button class="rechner-key" data-digit="5" type="button">5</button>
+    <button class="rechner-key" data-digit="6" type="button">6</button>
+    <button class="rechner-key op" data-op="−" type="button">−</button>
+    <button class="rechner-key fn" data-action="clearentry" type="button" title="Nur die aktuelle Zahl löschen (Entf)">CE</button>
+
+    <button class="rechner-key" data-digit="1" type="button">1</button>
+    <button class="rechner-key" data-digit="2" type="button">2</button>
+    <button class="rechner-key" data-digit="3" type="button">3</button>
+    <button class="rechner-key op" data-op="+" type="button">+</button>
+    <button class="rechner-key fn" data-action="sign" type="button" title="Vorzeichen">±</button>
+
+    <button class="rechner-key zero" data-digit="0" type="button">0</button>
+    <button class="rechner-key" data-digit="." type="button">,</button>
+    <button class="rechner-key eq zero" data-action="equals" type="button">=</button>
+  </div>
+</div>
+</div>

@@ -1,0 +1,148 @@
+<!--
+  Milcrid-App: Terminplaner (Klaus-Brainstorm 2026-09-14)
+  Die Mitte von Kalender, Notizen und Uhr: alles mit Datum landet hier. Wird
+  von milcrid_portal.html beim ersten Oeffnen nachgeladen (appDateiLesen) -
+  kein eigenes <html>/<head>, nutzt die Farbvariablen des Portals. Alle
+  Klassen/IDs mit "tp"-Vorsilbe, weil <style> und <script> dokumentweit gelten.
+  Daten nur ueber window.milcridPlaner (Planer-Bruecke im Portal).
+-->
+<style>
+  /* hidden muss gewinnen: viele Teile hier haben display:flex, und das Portal
+     hat keine allgemeine [hidden]-Regel. */
+  .tp [hidden]{display:none !important}
+  /* Huelle = Container fuer die Abfrage unten. Auf .tp selbst wirkte sie nicht
+     (erstes Bildschirmfoto 15.09.: zwei Spalten im schmalen Fenster, Rollbalken) -
+     ein Element kann nur seine Vorfahren abfragen, nie sich selbst. */
+  .tp-huelle{width:100%; height:100%; container-type:size}
+  .tp{display:flex; gap:14px; width:100%; height:100%; padding:14px; box-sizing:border-box;
+      font-family:var(--sans); color:var(--text)}
+  .tp-spalte{display:flex; flex-direction:column; gap:10px; min-height:0}
+  .tp-links{flex:0 0 42%}
+  .tp-rechts{flex:1 1 auto; overflow:auto; background:var(--surface); border:1px solid var(--surface-line);
+             border-radius:14px; padding:14px 16px}
+  @container (max-width: 620px){
+    .tp{flex-direction:column; overflow:auto}
+    .tp-links{flex:0 0 auto; max-height:45%}
+    .tp-rechts{flex:0 0 auto}
+  }
+  .tp-kopf{display:flex; gap:8px}
+  .tp-feld, .tp-auswahl, .tp-text{
+    background:rgba(255,255,255,.04); border:1px solid var(--surface-line); border-radius:9px;
+    padding:7px 10px; color:var(--text); font-family:var(--sans); font-size:13px; outline:none;
+    box-sizing:border-box; min-width:0;
+  }
+  .tp-feld:focus, .tp-auswahl:focus, .tp-text:focus{border-color:var(--accent)}
+  .tp-auswahl option{background:#0b1a3a}
+  .tp-text{resize:vertical; min-height:70px; width:100%}
+  #tpSuche{flex:1 1 auto}
+  .tp-knopf{
+    padding:7px 14px; border-radius:999px; cursor:pointer; white-space:nowrap;
+    border:1.5px solid var(--surface-line); background:rgba(255,255,255,.05);
+    color:var(--text); font-family:var(--sans); font-size:13px;
+  }
+  .tp-knopf:hover{border-color:var(--gold-line)}
+  .tp-knopf.haupt{border-color:var(--gold-line); color:var(--btn-text); font-weight:700;
+    background:radial-gradient(circle at 50% 22%, var(--btn-light) 0%, var(--btn) 45%, var(--btn-dark) 100%)}
+  .tp-knopf.warnung{border-color:#e0604a; color:#ffb199}
+  .tp-knopf.klein{padding:3px 10px; font-size:12px}
+  .tp-liste{flex:1 1 auto; overflow:auto; display:flex; flex-direction:column; gap:4px; padding-right:4px}
+  .tp-gruppe{font-size:12px; font-weight:700; color:var(--gold); margin:10px 2px 2px; text-transform:uppercase; letter-spacing:.04em}
+  .tp-gruppe:first-child{margin-top:0}
+  .tp-eintrag{display:flex; gap:10px; align-items:baseline; padding:7px 10px; border-radius:10px; cursor:pointer;
+              background:var(--surface); border:1px solid var(--surface-line)}
+  .tp-eintrag:hover{background:var(--accent-dim)}
+  .tp-eintrag.gewaehlt{box-shadow:inset 0 0 0 2px var(--gold-line)}
+  .tp-eintrag-wann{flex:0 0 auto; font-size:12px; color:var(--muted); min-width:92px}
+  .tp-eintrag-titel{flex:1 1 auto; font-size:13.5px; font-weight:600; word-break:break-word}
+  .tp-eintrag-zeichen{flex:0 0 auto; font-size:12px; color:var(--muted)}
+  .tp-leer{color:var(--muted); font-size:13px; padding:8px 2px}
+  .tp-form{display:flex; flex-direction:column; gap:10px}
+  .tp-form label{display:flex; flex-direction:column; gap:4px; font-size:12px; color:var(--muted)}
+  .tp-reihe{display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end}
+  .tp-reihe > label{flex:1 1 140px}
+  .tp-hinweis{font-size:11.5px; color:var(--muted)}
+  .tp-abschnitt{border-top:1px solid var(--surface-line); padding-top:10px; display:flex; flex-direction:column; gap:6px}
+  .tp-abschnitt-kopf{display:flex; justify-content:space-between; align-items:center; font-size:13px; font-weight:700}
+  .tp-anhang{display:flex; gap:8px; align-items:center; font-size:13px; padding:5px 8px; border-radius:8px; background:rgba(255,255,255,.03)}
+  .tp-anhang-name{flex:1 1 auto; word-break:break-all}
+  .tp-anhang.fehlt .tp-anhang-name{color:#ffb199}
+  .tp-notiz{font-size:13px; padding:7px 9px; border-radius:8px; background:rgba(255,255,255,.03); cursor:pointer; white-space:pre-wrap; word-break:break-word}
+  .tp-notiz b{color:var(--gold)}
+  .tp-notiz.leuchtet{box-shadow:inset 0 0 0 2px var(--gold-line)}
+  .tp-knoepfe{display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap; border-top:1px solid var(--surface-line); padding-top:12px}
+  .tp-status{font-size:12.5px; min-height:1.2em; text-align:right}
+  .tp-status.fehler{color:#ff9d8a}
+  .tp-status.erfolg{color:#8fe3a1}
+</style>
+
+<div class="tp-huelle">
+<div class="tp">
+  <div class="tp-spalte tp-links">
+    <div class="tp-kopf">
+      <input class="tp-feld" id="tpSuche" type="search" placeholder="Termine durchsuchen …">
+      <button class="tp-knopf haupt" id="tpNeu" type="button">+ Neu</button>
+    </div>
+    <div class="tp-liste" id="tpListe"></div>
+  </div>
+  <div class="tp-spalte tp-rechts">
+    <div class="tp-leer" id="tpLeer">Links einen Termin auswählen oder mit „+ Neu“ anlegen.</div>
+    <form class="tp-form" id="tpForm" hidden>
+      <label>Titel<input class="tp-feld" id="tpTitel" maxlength="200" placeholder="Worum geht es?"></label>
+      <div class="tp-reihe">
+        <label>Datum<input class="tp-feld" id="tpDatum" type="date"></label>
+        <label>Uhrzeit<input class="tp-feld" id="tpUhrzeit" type="time"></label>
+      </div>
+      <div class="tp-hinweis" id="tpSerieHinweis">Uhrzeit leer lassen = ganztägig.</div>
+      <label>Ort<input class="tp-feld" id="tpOrt" maxlength="200"></label>
+      <label>Details<textarea class="tp-text" id="tpDetails" maxlength="4000"></textarea></label>
+      <div class="tp-reihe">
+        <label>Erinnerung
+          <select class="tp-auswahl" id="tpErinnerungAn">
+            <option value="an">erinnern</option>
+            <option value="aus">keine Erinnerung</option>
+          </select>
+        </label>
+        <label>wie viel<input class="tp-feld" id="tpErinnerungWert" type="number" min="0" max="520" value="1"></label>
+        <label>vorher
+          <select class="tp-auswahl" id="tpErinnerungEinheit">
+            <option value="minuten">Minuten</option>
+            <option value="stunden" selected>Stunden</option>
+            <option value="tage">Tage</option>
+            <option value="wochen">Wochen</option>
+          </select>
+        </label>
+        <label>Wiederholung
+          <select class="tp-auswahl" id="tpWiederholung">
+            <option value="keine">keine</option>
+            <option value="woechentlich">jede Woche</option>
+            <option value="monatlich">jeden Monat</option>
+            <option value="jaehrlich">jedes Jahr</option>
+          </select>
+        </label>
+      </div>
+      <div class="tp-hinweis">0 = Erinnerung genau zum Termin.</div>
+
+      <div class="tp-abschnitt">
+        <div class="tp-abschnitt-kopf"><span>Dateien</span>
+          <button class="tp-knopf klein" id="tpDateiNeu" type="button">+ Datei verknüpfen</button></div>
+        <div id="tpDateien"></div>
+      </div>
+
+      <div class="tp-abschnitt" id="tpNotizAbschnitt">
+        <div class="tp-abschnitt-kopf"><span>Notizen zu diesem Termin</span></div>
+        <div id="tpNotizen"></div>
+        <textarea class="tp-text" id="tpNotizText" placeholder="Neue Notiz zu diesem Termin …"></textarea>
+        <div style="display:flex; justify-content:flex-end">
+          <button class="tp-knopf klein" id="tpNotizNeu" type="button">Notiz speichern</button></div>
+      </div>
+
+      <div class="tp-knoepfe">
+        <button class="tp-knopf" id="tpVorbereiten" type="button" title="Dateien öffnen und Notizen zeigen">Vorbereiten</button>
+        <button class="tp-knopf warnung" id="tpLoeschen" type="button">Löschen</button>
+        <button class="tp-knopf haupt" id="tpSpeichern" type="submit">Speichern</button>
+      </div>
+      <div class="tp-status" id="tpStatus"></div>
+    </form>
+  </div>
+</div>
+</div>

@@ -1,0 +1,169 @@
+<!--
+  Milcrid-App: Kalender
+  Von milcrid_portal.html per Electron-Bruecke (window.milcrid.appDateiLesen)
+  nachgeladen, sobald die App-Kachel zum ersten Mal angeklickt wird - kein
+  eigenes <html>/<head>, nutzt die Farbvariablen des Portals mit.
+  Seit 2026-09-14 die UEBERSICHT ueber den Terminplaner (Klaus-Brainstorm):
+  keine eigene Ablage mehr (kalender.json), Eintragen landet im Terminplaner,
+  Bearbeiten und Loeschen passiert dort.
+-->
+<style>
+  /* ---- Kalender: klassisches Monatsblatt ---- */
+  .kalender{display:flex; flex-direction:column; gap:10px; flex:1 1 auto; min-height:0}
+  .kalender-head{display:flex; align-items:center; gap:10px}
+  .kalender-titel{
+    flex:1 1 auto; text-align:center;
+    font-family:var(--sans); font-size:15px; font-weight:600; color:var(--text);
+  }
+  .kalender-nav, .kalender-heute{
+    padding:5px 12px;
+    border:2px solid var(--gold-line);
+    background:radial-gradient(circle at 50% 22%, var(--btn-light) 0%, var(--btn) 45%, var(--btn-dark) 100%);
+    box-shadow:0 3px 6px rgba(0,0,0,.35), inset 0 1px 2px rgba(255,255,255,.5), inset 0 -2px 3px rgba(0,0,0,.3);
+    border-radius:999px;
+    color:var(--btn-text);
+    font-family:var(--sans); font-size:13px;
+    cursor:pointer;
+    transition:transform .12s;
+  }
+  .kalender-nav:hover, .kalender-heute:hover{transform:translateY(-1px); animation:sbPuls 1.3s ease-in-out infinite}
+  .kalender-nav:active, .kalender-heute:active{transform:translateY(1px)}
+  .kalender-wochentage{
+    display:grid; grid-template-columns:repeat(7,1fr); gap:4px;
+    font-family:var(--sans); font-size:11px; color:var(--muted); text-align:center;
+  }
+  .kalender-tage{
+    display:grid; grid-template-columns:repeat(7,1fr); grid-auto-rows:44px; gap:4px;
+    flex:0 0 auto;
+  }
+  .kalender-tag{
+    position:relative;
+    display:flex; flex-direction:column; align-items:flex-end;
+    padding:4px 6px; border-radius:8px;
+    overflow:hidden;
+    background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.015));
+    box-shadow:0 2px 4px rgba(0,0,0,.3), inset 0 1px 1px rgba(255,255,255,.12), inset 0 -1px 2px rgba(0,0,0,.25);
+    color:var(--text);
+    font-family:var(--sans); font-size:12.5px;
+    cursor:pointer;
+    transition:background .15s, transform .1s;
+  }
+  .kalender-tag:hover{background:var(--accent-dim); transform:translateY(-1px)}
+  .kalender-tag.leer{visibility:hidden; cursor:default}
+  .kalender-tag.heute{
+    background:var(--accent-dim);
+    box-shadow:inset 0 0 0 1px rgba(var(--accent-rgb),.6);
+    font-weight:700; color:var(--accent);
+  }
+  .kalender-tag.ausgewaehlt{box-shadow:inset 0 0 0 2px var(--gold-line)}
+  .kalender-tag-kurz{
+    align-self:stretch;
+    margin-top:auto;
+    text-align:left;
+    font-size:9.5px; color:var(--gold);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+
+  /* ---- Termine: Liste + Neu-Eintragen fuer den ausgewaehlten Tag ---- */
+  .kalender-termine{
+    flex:1 1 auto; min-height:0;
+    display:flex; flex-direction:column; gap:8px;
+    border-top:1px solid var(--surface-line);
+    padding-top:10px;
+  }
+  .kalender-termine-titel{
+    font-family:var(--sans); font-size:13px; font-weight:600; color:var(--text);
+  }
+  .kalender-termine-liste{
+    flex:1 1 auto; min-height:0; overflow-y:auto;
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .kalender-termine-leer{color:var(--muted); font-size:12.5px}
+  .termin-zeile{
+    display:flex; align-items:center; gap:8px;
+    background:var(--surface);
+    border:1px solid var(--surface-line);
+    border-radius:10px;
+    padding:6px 8px;
+  }
+  .termin-text{
+    flex:1 1 auto; min-width:0;
+    display:flex; flex-direction:column; gap:2px;
+  }
+  .termin-titel{
+    font-family:var(--sans); font-size:13px; font-weight:600; color:var(--text);
+    word-break:break-word;
+  }
+  .termin-details{
+    font-family:var(--sans); font-size:12px; color:var(--muted);
+    word-break:break-word;
+  }
+  .kalender-termine-neu{display:flex; flex-direction:column; gap:8px}
+  .kalender-termine-neu-zeile2{display:flex; gap:8px}
+  .termin-zeile{cursor:pointer}
+  .termin-zeile:hover{background:var(--accent-dim)}
+  .termin-zeit{flex:0 0 auto; font-family:var(--sans); font-size:12px; color:var(--gold); min-width:58px}
+  .kalender-termine-kopf{display:flex; align-items:center; gap:8px}
+  .kalender-termine-kopf .kalender-termine-titel{flex:1 1 auto}
+  .kalender-planer-knopf{
+    padding:4px 10px; border-radius:999px; cursor:pointer;
+    border:1.5px solid var(--surface-line); background:rgba(255,255,255,.05);
+    color:var(--text); font-family:var(--sans); font-size:12px;
+  }
+  .kalender-planer-knopf:hover{border-color:var(--gold-line)}
+  .kalender-termine-status{font-family:var(--sans); font-size:12px; color:#ff9d8a; min-height:1em}
+  #termZeitInput{flex:0 0 auto; width:110px}
+  #termTitelInput, #termDetailsInput, #termZeitInput{
+    flex:1 1 auto;
+    background:var(--surface);
+    border:1px solid var(--surface-line);
+    border-radius:999px;
+    padding:7px 14px;
+    color:var(--text);
+    font-family:var(--sans); font-size:13px;
+    outline:none;
+  }
+  #termTitelInput:focus, #termDetailsInput:focus, #termZeitInput:focus{border-color:var(--accent)}
+  #termHinzufuegen{
+    flex:0 0 auto;
+    width:34px; height:34px; border-radius:50%;
+    border:2px solid var(--gold-line);
+    background:radial-gradient(circle at 50% 22%, var(--btn-light) 0%, var(--btn) 45%, var(--btn-dark) 100%);
+    box-shadow:0 3px 6px rgba(0,0,0,.35), inset 0 1px 2px rgba(255,255,255,.5), inset 0 -2px 3px rgba(0,0,0,.3);
+    color:var(--btn-text);
+    font-size:16px;
+    cursor:pointer;
+  }
+  #termHinzufuegen:hover{animation:sbPuls 1.3s ease-in-out infinite}
+</style>
+
+<div class="kalender">
+  <div class="kalender-head">
+    <button class="kalender-nav" id="kalenderZurueckMonat" title="Vorheriger Monat">‹</button>
+    <div class="kalender-titel" id="kalenderTitel">—</div>
+    <button class="kalender-nav" id="kalenderVorMonat" title="Nächster Monat">›</button>
+    <button class="kalender-heute" id="kalenderHeute">Heute</button>
+  </div>
+  <div class="kalender-wochentage">
+    <div>Mo</div><div>Di</div><div>Mi</div><div>Do</div><div>Fr</div><div>Sa</div><div>So</div>
+  </div>
+  <div class="kalender-tage" id="kalenderTage"></div>
+  <div class="kalender-termine">
+    <div class="kalender-termine-kopf">
+      <div class="kalender-termine-titel" id="termineTitel">Auf einen Tag klicken, um Termine zu sehen/einzutragen</div>
+      <button class="kalender-planer-knopf" id="kalenderPlanerBtn" type="button" hidden>Im Terminplaner eintragen …</button>
+    </div>
+    <div class="kalender-termine-liste" id="termineListe"></div>
+    <div class="kalender-termine-neu">
+      <div class="kalender-termine-neu-zeile2">
+        <input type="text" id="termTitelInput" placeholder="Kurztitel, z. B. „PC kaufen“…" disabled>
+        <input type="time" id="termZeitInput" title="Uhrzeit (leer = ganztägig)" disabled>
+      </div>
+      <div class="kalender-termine-neu-zeile2">
+        <input type="text" id="termDetailsInput" placeholder="Details (optional), z. B. „vorher Bank, Rechnung nicht vergessen“…" disabled>
+        <button id="termHinzufuegen" disabled title="Im Terminplaner eintragen">+</button>
+      </div>
+      <div class="kalender-termine-status" id="termStatus"></div>
+    </div>
+  </div>
+</div>
