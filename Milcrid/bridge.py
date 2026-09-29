@@ -1125,6 +1125,10 @@ APP_ALIASE = {
     "office": "libreoffice",
     "video": "vlc", "player": "vlc",
     "gpu": "nvtop", "systemmonitor": "nvtop",
+    # Fenstertitel statt Programmname: das Modell liest "Mozilla Thunderbird" aus
+    # der Fensterliste ab und ruft damit open_app - "zeig Thunderbird wieder" fand
+    # deshalb nichts (Fenster-Durchgang 28.09.2026).
+    "mozilla firefox": "firefox", "mozilla thunderbird": "thunderbird",
     # Milcrids eigene kleine Anwendungen heissen intern "Milcrid Uhr",
     # "Milcrid Rechner", "Milcrid Kalender". Gesprochen sagt Klaus nur den
     # kurzen Teil - das findet die Teilwort-Suche unten ohnehin. Hier nur
@@ -1171,6 +1175,13 @@ def open_app(name):
     # Faehigkeiten > Woerterliste) - sie hat Vorrang vor allem
     # fest Einprogrammierten, siehe woerterliste_verwaltung.py.
     name = woerterliste_verwaltung.aufloesen(name)
+    # Weiche (29.09.2026): "oeffne Hintergrund" -> Modell rief open_app("Milcrid Rechner")
+    # (am 22.09. schon einmal, "Hintergrund lila" -> Rechner). Nennt Klaus die App gar
+    # nicht, aber genau einen Portal-Bereich, ist der Bereich gemeint - Gegenstueck zur
+    # Weiche in open_section. Nur mit echtem Satz (Merkliste/Tests ohne Satz: wie bisher).
+    bereich = _bereich_im_satz() if _EINGABE["text"] else None
+    if bereich and not _app_im_satz_genannt(name) and faehigkeiten_verwaltung.ist_aktiv("bereiche_oeffnen"):
+        return open_section(bereich)
     gesucht = (name or "").strip().lower()
     gesucht = APP_ALIASE.get(gesucht, gesucht)
 
@@ -1180,6 +1191,9 @@ def open_app(name):
     treffer = [e for e in apps if _name(e) == gesucht]
     if not treffer:
         treffer = [e for e in apps if gesucht in _name(e)]
+    # "Handbuch Tastatur": der Name enthaelt das Kapitel mit - trotzdem das Handbuch.
+    if not treffer and "handbuch" in gesucht:
+        treffer = [e for e in apps if e[0] == "milcrid" and e[1].get("id") == "handbuch"]
 
     if not treffer:
         # Kein Programm dieses Namens - aber vielleicht ein Portal-Bereich?
@@ -1219,15 +1233,112 @@ def open_app(name):
 
     art, app = treffer[0]
     if art == "milcrid":
-        _PORTAL_AKTIONEN.append({
-            "typ": "milcrid_app_oeffnen", "id": app["id"], "name": app["name"],
-        })
+        aktion = {"typ": "milcrid_app_oeffnen", "id": app["id"], "name": app["name"]}
+        _PORTAL_AKTIONEN.append(aktion)
+        if app["id"] == "handbuch":
+            sprache = _handbuch_sprache(_EINGABE["text"] or name)
+            if sprache:
+                aktion["sprache"] = sprache
+            if sprache == "en":
+                # Der englische Text ist anders gegliedert - kein Kapitelsprung (29.09.2026).
+                return (f'"{app["name"]}" wird auf Englisch geoeffnet. '
+                        'Antworte Klaus mit genau diesem Satz: "Das Handbuch ist auf Englisch aufgeschlagen."')
+            kapitel = _handbuch_kapitel(_EINGABE["text"] or name)
+            if sprache == "de" and not kapitel:
+                return (f'"{app["name"]}" wird auf Deutsch geoeffnet. '
+                        'Antworte Klaus mit genau diesem Satz: "Das Handbuch ist auf Deutsch aufgeschlagen."')
+            if kapitel:
+                aktion["kapitel"] = kapitel[0]
+                # Satz woertlich vorgeben: am 29.09. erzaehlte das Modell trotz richtigem
+                # Ergebnis "Der Bereich Milcrid Papierkorb wurde geoeffnet".
+                return (f'"{app["name"]}" wird geoeffnet, beim Kapitel "{kapitel[1]}". '
+                        f'Antworte Klaus mit genau diesem Satz: "Das Handbuch ist beim Kapitel '
+                        f'„{kapitel[1]}“ aufgeschlagen."')
     else:
         _PORTAL_AKTIONEN.append({
             "typ": "app_oeffnen", "exec": app["exec"], "name": app["name"],
             "icon": app.get("icon"), "pfad": app.get("pfad"),
         })
     return f'"{app["name"]}" wird geoeffnet.'
+
+
+HANDBUCH_PFAD = os.path.expanduser("~/Milcrid-App/Milcrid Apps/handbuch/handbuch.html")
+_HANDBUCH_FUELLWORTE = {"oeffne", "oeffnen", "zeig", "zeige", "starte", "milcrid", "handbuch", "kapitel",
+                        "englisch", "english", "englische", "englischen", "deutsch", "deutsche", "deutschen",
+                        "sprache", "stell", "stelle", "schalte", "schalt", "um", "umstellen", "umschalten",
+                        "das", "dem", "den", "der", "die", "des", "im", "in", "zum", "zur", "bei", "beim",
+                        "ueber", "von", "mir", "bitte", "computer", "mal", "geh", "gehe", "auf", "und", "mit"}
+
+
+def _handbuch_text(satz):
+    """Satz in Vergleichsform, "Handbuch" vom angeklebten Kapitel getrennt: Whisper schreibt
+    "Handbuch Themen" als "Handbuchthemen" (Klaus' Probe 29.09.2026, 00:49 - 2x in Folge)."""
+    return re.sub(r"\bhandbuch(?=[a-z])", "handbuch ", _umlaute(satz))
+
+
+_HANDBUCH_VERBEN = re.compile(r"^(oeffne|oeffnen|zeig|zeige|zeigen|schlag|schlage|geh|gehe|starte|stell|stelle|schalte|schalt)\b")
+
+
+def _handbuch_sprache(satz):
+    """"en"/"de", wenn Klaus im Satz eine Sprache fuer das Handbuch nennt, sonst None
+    (Klaus 29.09.2026: "Handbuch auf Englisch" ging nur ueber den Knopf)."""
+    t = _handbuch_text(satz)
+    if re.search(r"\b(englisch\w*|english)\b", t):
+        return "en"
+    if re.search(r"\bdeutsch\w*\b", t):
+        return "de"
+    return None
+
+
+def handbuch_kapitel_befehl(text):
+    """Fest erkannt, BEVOR Merkliste und Modell drankommen (main.py): "oeffne Handbuch
+    <Kapitel>" mit einem Kapitel, das es gibt. Grund (Klaus 29.09.2026): das Modell
+    waehlte je nach Verlauf open_app, open_section oder open_file - und setzte bei
+    "Oeffne, Handbuch, Themen" zusaetzlich open_theme("alle") ab: alle Themen gingen auf.
+    Gibt das Kapitel (Kennung, Titel) zurueck oder None."""
+    t = _handbuch_text(text)
+    t = re.sub(r"^(computer|milcrid|bitte)\s+", "", t)
+    if not re.search(r"\bhandbuch\b", t):
+        return None
+    if not (_HANDBUCH_VERBEN.search(t) or t.startswith("handbuch")):
+        return None
+    if not (extras_verwaltung.app_id_aktiv("handbuch") and faehigkeiten_verwaltung.ist_aktiv("apps_oeffnen")):
+        return None
+    return _handbuch_kapitel(text) or _handbuch_sprache(text)
+
+
+def _handbuch_im_satz():
+    """Nennt Klaus' Satz das Handbuch? Dann ist beim Oeffnen IMMER das Handbuch gemeint,
+    egal welches Oeffnen-Werkzeug das Modell waehlt. Gemessen 29.09.2026 nach frischem
+    Neustart: "oeffne Handbuch Papierkorb/Fenster/Tastatur/Datei Manager" -> 4x falsch
+    (open_section Papierkorb, open_file "Handbuch Tastatur" ...). Mit passender Vorgeschichte
+    waren es 5/5 - auf die Werkzeugwahl des Modells ist also kein Verlass."""
+    return (bool(re.search(r"\bhandbuch\b", _handbuch_text(_EINGABE["text"] or "")))
+            and extras_verwaltung.app_id_aktiv("handbuch")
+            and faehigkeiten_verwaltung.ist_aktiv("apps_oeffnen"))
+
+
+def _handbuch_kapitel(satz):
+    """(Kennung, Titel) des Handbuch-Kapitels, das Klaus im Satz nennt ("oeffne Handbuch
+    Tastatur" -> hb-tasten, "Tastaturbelegung"), sonst None. Die Kapitel kommen aus
+    handbuch.html selbst - keine zweite Liste, die veraltet (Klaus 29.09.2026).
+    Mehrere passen ("Fenster"): mehr passende Woerter, dann Hauptkapitel, dann kuerzester Titel."""
+    import html as _html
+    try:
+        with open(HANDBUCH_PFAD, encoding="utf-8") as f:
+            kapitel = re.findall(r'<h([23]) id="(hb-[^"]+)"[^>]*>([^<]+)', f.read())
+    except Exception:
+        return None
+    worte = [w for w in _handbuch_text(satz).split() if len(w) >= 3 and w not in _HANDBUCH_FUELLWORTE]
+    beste = None
+    for ebene, kennung, titel in kapitel:
+        titel = _html.unescape(titel).strip()
+        tw = _umlaute(titel).split()
+        n = sum(1 for w in worte
+                if any(x == w or (len(w) >= 4 and len(x) >= 4 and (w in x or x in w)) for x in tw))
+        if n and (beste is None or (n, ebene == "2", -len(titel)) > beste[0]):
+            beste = ((n, ebene == "2", -len(titel)), kennung, titel)
+    return (beste[1], beste[2]) if beste else None
 
 
 def _milcrid_app_treffer(gesucht):
@@ -1343,6 +1454,130 @@ _CHATFENSTER_NAMEN = ("chatfenster", "chat", "chatleiste", "daschatfenster",
 _CHATFENSTER_SCHWELLE = 0.80
 
 
+def _bereich_eng(t):
+    """Vergleichsform fuer Bereichsnamen - EINE fuer open_section und die Weiche
+    in open_app/open_file (vorher zwei Kopien, die auseinanderliefen). Leerzeichen
+    und Bindestriche zaehlen nicht (Whisper: "Datei Manager"/"Dateimanager"),
+    seit 28.09.2026 auch Umlaute und "&" nicht: das Modell schrieb "Eingabegeraete"
+    und fand den Bereich nicht, "Anzeige und Oberfläche" soll "Anzeige & Oberfläche"
+    treffen (Fenster-Durchgang 28.09.)."""
+    t = (t or "").strip().lower().replace("&", "und")
+    for a, b in (("ä", "ae"), ("ö", "oe"), ("ü", "ue"), ("ß", "ss")):
+        t = t.replace(a, b)
+    return t.replace("-", "").replace(" ", "")
+
+
+def _bereich_im_satz():
+    """Der EINE Portal-Bereich, den Klaus im Satz nennt (laengster Treffer), sonst None.
+    Gegenstueck zu _milcrid_app_im_satz - siehe die Weiche am Anfang von open_app."""
+    satz = _bereich_eng(_EINGABE["text"] or "")
+    if not satz:
+        return None
+    treffer = {a for a, _e in faehigkeiten_verwaltung.PORTAL_BEREICHE.values()
+               if len(_bereich_eng(a)) >= 4 and _bereich_eng(a) in satz}
+    if not treffer:
+        return None
+    laengste = max(len(_bereich_eng(a)) for a in treffer)
+    beste = [a for a in treffer if len(_bereich_eng(a)) == laengste]
+    return beste[0] if len(beste) == 1 else None
+
+
+def _app_im_satz_genannt(app_name):
+    """Kommt die App in Klaus' Satz vor - mit einem Wort ihres Namens oder einem
+    Oberbegriff aus APP_ALIASE ("Browser" -> Firefox)?"""
+    satz = _bereich_eng(_EINGABE["text"] or "")
+    worte = [_bereich_eng(w) for w in re.split(r"[\s\-]+", app_name or "")
+             if len(w) >= 3 and w.lower() not in ("milcrid", "mozilla")]
+    if any(w and w in satz for w in worte):
+        return True
+    return any(_bereich_eng(k) in satz and v in (app_name or "").lower()
+               for k, v in APP_ALIASE.items() if len(k) >= 3)
+
+
+_HG_MUSTER = (
+    re.compile(r"^(?:(?:nimm|setze|setz|stell|stelle|mach|mache|wechsle|wechsel|aendere)\s+)?(?:(?:den|das)\s+)?"
+               r"hintergrund(?:bild)?\s+(?:(?:auf|zu|in|ins)\s+)?(?:(?:das|den)\s+)?(?:bild\s+)?(.+?)$"),
+    re.compile(r"^(?:(?:nimm|setze|setz|mach|mache)\s+)?(?:(?:das|den)\s+)?(?:bild\s+)?(.+?)\s+als\s+hintergrund(?:bild)?$"),
+)
+
+
+def hintergrund_befehl(text):
+    """Fest erkannt, BEVOR Merkliste und Modell drankommen (main.py): "Hintergrundbild
+    Sonne", "Hintergrund Milcrid", "nimm Sonne als Hintergrund" (Klaus 29.09.2026).
+    Greift NUR, wenn der Name zu einem vorhandenen Hintergrund passt - "Hintergrund
+    pink" ist eine Farbe und geht weiter ans Modell. Setzt den Hintergrund und gibt
+    den Satz fuer Klaus zurueck, sonst None."""
+    import theme_verwaltung
+    t = re.sub(r"^(computer|milcrid|bitte)\s+", "", _umlaute(text))
+    for muster in _HG_MUSTER:
+        m = muster.match(t)
+        if not m:
+            continue
+        # "Hintergrund BILD ..." - auch verhoert ("BuildMilkWrit") - meint nie eine Farbe.
+        rest = m.group(1)
+        bild_gemeint = bool(re.search(r"hintergrundbild|\bbild\b", t)) or bool(re.match(r"^(bild|build|bilt)", rest))
+        rest = re.sub(r"^(bild|build|bilt)\s*", "", rest)
+        wert = theme_verwaltung.hintergrund_nach_name(rest)
+        if not wert:
+            if not bild_gemeint:
+                return None            # "Hintergrund pink": Farbe, das Modell entscheidet
+            namen = ["Standard", "Milcrid"] + [os.path.splitext(b["name"])[0]
+                                               for b in theme_verwaltung.hintergrund_bilder()]
+            farbe = next((f for f in _FARBTOENE if _umlaute(f) == rest.strip()), None)
+            tipp = f" Für die Portal-Farbe sag „Hintergrund {farbe}“." if farbe else ""
+            wort = farbe or (text.split()[-1].strip(" ,.!?") if text.split() else rest.strip())
+            return (f"Ein Hintergrundbild „{wort}“ gibt es nicht. Vorhanden: "
+                    + ", ".join(f"„{n}“" for n in namen) + "." + tipp)
+        theme_verwaltung.hintergrund_speichern(wert)
+        info = theme_verwaltung.info()
+        _PORTAL_AKTIONEN.append({"typ": "hintergrund_setzen", "wert": wert,
+                                 "bilder": info.get("hintergrund_bilder", []),
+                                 "abdunkeln": info.get("abdunkeln", {})})
+        name = {"standard": "Standard", "milcrid": "Milcrid"}.get(wert) or os.path.splitext(wert[5:])[0]
+        return f"Der Hintergrund ist jetzt „{name}“."
+    return None
+
+
+def bereich_befehl(text):
+    """Fest erkannt, BEVOR Merkliste und Modell drankommen (main.py): der Satz ist genau
+    "oeffne <Bereich>" / "<Bereich> oeffnen" mit dem Namen EINES Portal-Bereichs.
+    Gemessen 29.09.2026 an allen Mitschriften: bei solchen Saetzen griff das Modell in
+    87 von 616 Faellen daneben oder rief gar nichts auf ("oeffne Farben" 23x ohne Befehl,
+    "oeffne Hintergrund" -> Rechner). Heisst eine App, ein Thema oder ein Portal-Fenster
+    genauso, entscheidet weiter das Modell. Gibt den Bereichsnamen zurueck oder None."""
+    if not faehigkeiten_verwaltung.ist_aktiv("bereiche_oeffnen"):
+        return None
+    t = re.sub(r"^(computer|milcrid|bitte)\s+", "", _umlaute(text))
+    m = (re.match(r"^(?:oeffne|zeig|zeige)\s+(?:den |die |das )?(.+)$", t)
+         or re.match(r"^(?:den |die |das )?(.+?)\s+(?:oeffnen|zeigen)$", t))
+    if not m:
+        return None
+    gesucht = _bereich_eng(m.group(1))
+    treffer = {a for a, _e in faehigkeiten_verwaltung.PORTAL_BEREICHE.values() if _bereich_eng(a) == gesucht}
+    if len(treffer) != 1:
+        return None
+    if _milcrid_app_treffer(gesucht) or any(_bereich_eng(n) == gesucht
+                                            for n in faehigkeiten_verwaltung.PORTAL_FENSTER.values()):
+        return None
+    try:
+        with open(SCHREIBTISCHE_PFAD, "r", encoding="utf-8") as f:
+            themen = json.load(f)
+        if any(isinstance(x, dict) and _bereich_eng(x.get("titel")) == gesucht for x in themen or []):
+            return None
+    except Exception:
+        pass
+    return treffer.pop()
+
+
+def _bereich_umleitung(name):
+    """Alter Kachelname, der heute eine Zeile in einem anderen Bereich ist
+    (faehigkeiten_verwaltung.BEREICH_UMLEITUNG, z. B. Tagebuch -> KI Profil)?
+    Dann der Name des Bereichs, sonst None."""
+    g = _bereich_eng(name)
+    return next((z for n, z in faehigkeiten_verwaltung.BEREICH_UMLEITUNG.items()
+                 if _bereich_eng(n) == g), None) if g else None
+
+
 def _bereich_kennung(name):
     """Genau EIN passender Portal-Bereich? Dann seine Kennung, sonst None.
 
@@ -1358,11 +1593,8 @@ def _bereich_kennung(name):
     "Datei-Manager" wild durcheinander, alle drei sind belegt.
     """
     katalog = faehigkeiten_verwaltung.PORTAL_BEREICHE
-
-    def eng(t):
-        return (t or "").strip().lower().replace("-", "").replace(" ", "")
-
-    gesucht = eng(name)
+    eng = _bereich_eng
+    gesucht = eng(_bereich_umleitung(name) or name)
     if not gesucht:
         return None
     passt = [k for k, (anzeige, _e) in katalog.items() if eng(anzeige) == gesucht]
@@ -2411,6 +2643,11 @@ def open_file(name):
     except PermissionError as e:
         return f"[Abgelehnt: {e}]"
 
+    # "oeffne Handbuch Tastatur" -> Modell rief open_file("Handbuch Tastatur") - gemeint ist
+    # das Handbuch, solange es keine solche Datei gibt (siehe _handbuch_im_satz).
+    if _handbuch_im_satz() and not os.path.isfile(filepath) and not _dateien_suchen(name):
+        return open_app("Milcrid Handbuch")
+
     if os.path.isfile(filepath):
         # Ein DIREKT passender Pfad ging bisher an der Suche vorbei - und
         # damit auch an _ist_intern. "oeffne bridge.py" machte deshalb den
@@ -2467,6 +2704,10 @@ def open_section(name):
     if not faehigkeiten_verwaltung.ist_aktiv("bereiche_oeffnen"):
         return ("[Abgelehnt: Diese Faehigkeit ist gerade ausgeschaltet - "
                  "Klaus kann sie unter Lokale KI > Faehigkeiten einschalten.]")
+    # "oeffne Handbuch Papierkorb" -> Modell rief open_section("Papierkorb") und oeffnete den
+    # echten Papierkorb. Einen Portal-Bereich "Handbuch" gibt es nicht (siehe _handbuch_im_satz).
+    if _handbuch_im_satz():
+        return open_app("Milcrid Handbuch")
     # Weiche (Planer-Test 15.09.): "öffne Terminplaner" kam als open_section("Terminplaner")
     # bzw. open_section("Meine Apps"). Nennt Klaus eine Milcrid-App und NICHT den Bereich,
     # den das Modell gewaehlt hat, ist die App gemeint - Gegenstueck zur Weiche in open_app.
@@ -2489,9 +2730,11 @@ def open_section(name):
     # "oeffne Datei Manager in Portal" ging). Betrifft alle Bereiche mit
     # mehrteiligen Namen, nicht nur den Datei Manager: Themen Manager,
     # Profil Manager, Prompt Manager, Lokale KI, Online KI, System Test ...
-    def _eng(t):
-        return (t or "").strip().lower().replace("-", "").replace(" ", "")
+    _eng = _bereich_eng
     gesucht = _eng(name)
+    umgeleitet = _bereich_umleitung(name)
+    if umgeleitet:
+        alt_name, gesucht = name, _eng(umgeleitet)
 
     treffer = [k for k, (anzeige, _eltern) in katalog.items() if _eng(anzeige) == gesucht]
     if not treffer:
@@ -2518,10 +2761,27 @@ def open_section(name):
 
     kennung = treffer[0]
     anzeige, eltern = katalog[kennung]
+    # Schon offen? Dann NICHT noch einmal klicken: die Kacheln schalten um, ein
+    # zweiter Klick klappte den Bereich wieder zu ("oeffne KI Profil" bei offenem
+    # KI Profil -> Profil Manager, Fenster-Durchgang 28.09.2026). Nur nach vorn holen.
+    if any(_bereich_eng(f.get("name")) == _bereich_eng(anzeige) for f in (_FENSTER_ZUSTAND or [])):
+        _PORTAL_AKTIONEN.append({"typ": "fenster_vorne", "name": anzeige})
+        return f'"{anzeige}" ist schon offen und wird nach vorn geholt.'
+    # Steht das Portal gerade auf einer UNTERSEITE dieses Bereichs (Betriebssystem >
+    # Netzwerk), aendert ein Klick auf die Ober-Kachel nichts - "oeffne Betriebssystem"
+    # blieb auf Netzwerk stehen (Fenster-Durchgang 28.09.2026). Dann eine Ebene zurueck,
+    # genau wie Klaus' Zurueck-Knopf.
+    unter = {_bereich_eng(a) for a, e in katalog.values() if e == kennung}
+    if unter and any(_bereich_eng(f.get("name")) in unter for f in (_FENSTER_ZUSTAND or [])):
+        _PORTAL_AKTIONEN.append({"typ": "zurueck"})
+        _PORTAL_AKTIONEN.append({"typ": "fenster_vorne", "name": anzeige})
+        return f'"{anzeige}" wird geoeffnet.'
     if eltern:
         eltern_anzeige, _ = katalog[eltern]
         _PORTAL_AKTIONEN.append({"typ": "bereich_oeffnen", "kennung": eltern})
     _PORTAL_AKTIONEN.append({"typ": "bereich_oeffnen", "kennung": kennung})
+    if umgeleitet:
+        return f'"{anzeige}" wird geoeffnet - "{alt_name}" ist dort eine Zeile.'
     return f'"{anzeige}" wird geoeffnet.'
 
 
@@ -3269,10 +3529,48 @@ import difflib
 _TAT = re.compile(r"\b(habe|hab|wurde|wurden|wird|werden|ist (jetzt|nun)|sind (jetzt|nun))\b[^.?!]{0,60}?\b(geöffnet|geoeffnet|geschlossen|minimiert|maximiert|vergrößert|verkleinert|gespeichert|gelöscht|neu gestartet|ausgeschaltet|beendet|durchgeführt|erledigt|eingetragen|gestellt|gesucht|abgespielt|klein gemacht|groß gemacht)\b", re.I)
 _TATFRAGE = re.compile(r"was hast du|was hattest du|was war das|hast du\b.*\bgemacht|was ist passiert|was (hast|habe) (du|ich)", re.I)
 _URTEIL = re.compile(r"\b(das war (richtig|falsch|gut)|richtig|genau|super|danke|dank|prima|passt)\b", re.I)
+# "Der Bereich X ist jetzt offen" ohne jeden Befehl rutschte durch _TAT ("offen" ist
+# kein Partizip) - Fenster-Durchgang 28.09.2026: dreimal erfunden. Gemessen an 18.500
+# Zuegen seit 09.09.: 8 zusaetzliche Treffer, davon 2 Auskuenfte auf eine Zustandsfrage
+# ("welche Fenster sind offen" -> "Die Uhr ist jetzt offen") - die bleiben frei.
+_TAT_OFFEN = re.compile(r"\b(ist|sind) (jetzt|nun)\b[^.?!]{0,60}?\b(offen|aufgerufen)\b", re.I)
+_ZUSTANDSFRAGE = re.compile(r"^\s*(welche[rsn]?|was|ist|sind|wie|wo|gibt es)\b|\?\s*$", re.I)
 
 
 def _gleich(a, b):
     return difflib.SequenceMatcher(None, _umlaute(a), _umlaute(b)).ratio()
+
+
+# Woerter, die in jedem Befehl vorkommen und darum nichts ueber das GEMEINTE sagen.
+_BEFEHLSWOERTER = {"oeffne", "oeffnen", "schliesse", "schliessen", "minimiere", "minimieren", "maximiere",
+                   "maximieren", "mach", "mache", "wieder", "normal", "zeig", "zeige", "bitte", "computer",
+                   "fenster", "starte", "starten", "gross", "klein", "hole", "zurueck",
+                   # Frage-/Zustandswoerter: "welche Fenster sind offen" -> "Die Uhr ist nicht
+                   # offen" ist Nachplappern, auch wenn "offen" in beiden steht (gemessen 29.09.).
+                   "offen", "welche", "welcher", "welches", "heute", "gerade", "jetzt", "noch", "auch"}
+
+
+def _ehrliche_absage_zum_satz(antwort, frage, offen=None):
+    """WAHRE Absage zum JETZIGEN Satz - dann ist die Aehnlichkeit zur vorigen Antwort
+    kein Nachplappern. Klaus 29.09.2026: "Thunderbird, minimieren" -> "Thunderbird ist
+    nicht offen", danach "mach Thunderbird wieder normal" -> fast dieselbe, ebenso wahre
+    Absage; ersetzt wurde sie durch "Sag es bitte noch einmal".
+    WAHR heisst: das Ding aus dem Satz steht in KEINEM offenen Fenster (Portal + Linux).
+    Ohne diese Bedingung (erster Entwurf) liess die Ausnahme an 18.630 Zuegen 206
+    Wiederholungen wie "kein Fenster namens Klaus" durch - obwohl Thema Klaus offen war.
+    offen = Fenstertitel; None = aktueller Stand (unbekannt -> keine Ausnahme)."""
+    if not (_ABSAGE_WORTE.search(antwort or "") or re.search(r"\bnicht\b", antwort or "", re.I)):
+        return False
+    if offen is None:
+        portal = _offene_fenster_titel()
+        if portal is None:
+            return False
+        offen = portal + _fremde_fenster()
+    offen_text = " ".join(_umlaute(t) for t in offen)
+    a = " " + _umlaute(antwort) + " "
+    worte = [w for w in _umlaute(frage).split()
+             if len(w) >= 4 and w not in _BEFEHLSWOERTER and f" {w} " in a]
+    return bool(worte) and not any(w in offen_text for w in worte)
 
 
 def tat_ohne_werkzeug(antwort, frage, vorige_antwort="", vorige_frage=""):
@@ -3281,7 +3579,7 @@ def tat_ohne_werkzeug(antwort, frage, vorige_antwort="", vorige_frage=""):
     if not a.strip() or a.lstrip().startswith("["):
         return ""
     if vorige_antwort and _gleich(frage, vorige_frage) < 0.8:
-        if _gleich(a, vorige_antwort) >= 0.8:
+        if _gleich(a, vorige_antwort) >= 0.8 and not _ehrliche_absage_zum_satz(a, frage):
             return "vorige Antwort wiederholt"
         # Die Antwort redet ueber einen Namen aus der VORIGEN Eingabe, der in der
         # jetzigen nicht vorkommt ("PC ausschalten" -> "kein Programm Video").
@@ -3291,7 +3589,8 @@ def tat_ohne_werkzeug(antwort, frage, vorige_antwort="", vorige_frage=""):
             k = _umlaute(n)
             if k and k not in jetzt and k in vorher and _gleich(a, vorige_antwort) >= 0.5:
                 return "vorige Antwort wiederholt"
-    if (_TAT.search(a) and not _ABSAGE_WORTE.search(a) and not re.search(r"\bnicht\b", a, re.I)
+    tat = _TAT.search(a) or (_TAT_OFFEN.search(a) and not _ZUSTANDSFRAGE.search(frage or ""))
+    if (tat and not _ABSAGE_WORTE.search(a) and not re.search(r"\bnicht\b", a, re.I)
             and not _TATFRAGE.search(frage or "") and not _URTEIL.search(frage or "")):
         return "Tat behauptet ohne Werkzeug"
     return ""

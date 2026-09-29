@@ -675,10 +675,6 @@ PORTAL_BEREICHE = {
     "profilNutzerBtn": ("Nutzer Profil", "profilmanager"),
     "profilAlleBtn": ("Alle Profile", "profilmanager"),
     "profilKiBtn": ("KI Profil", "profilmanager"),
-    "profilSelbstBtn": ("Selbst", "profilmanager"),
-    "profilTagebuchBtn": ("Tagebuch", "profilmanager"),
-    "profilErfahrungslogBtn": ("Erfahrungs-Log", "profilmanager"),
-    "gedaechtnisBtn": ("Gedächtnis", "profilmanager"),
     "profilSandboxBtn": ("Sandbox", "profilmanager"),
     "profilErstellenBtn": ("Profil erstellen", "profilmanager"),
     "promptCharakterBtn": ("Charakter Prompt", "lokaleki"),
@@ -693,14 +689,25 @@ PORTAL_BEREICHE = {
     # oder "oeffne System Test" landete deshalb bei irgendetwas anderem.
     "systemtest": ("System Test", None),
     "modelleBtn": ("Models", "lokaleki"),
-    "kurzzeitBtn": ("Kurzzeitgedächtnis", "profilmanager"),
-    "langzeitBtn": ("Langzeitgedächtnis", "profilmanager"),
     "updHinweiseBtn": ("Update-Hinweise", "update"),
     "updMilcridBtn": ("Milcrid Update", "update"),
     "updLinuxBtn": ("Linux System", "update"),
     "updProgrammeBtn": ("Programme", "update"),
     "updKiBtn": ("KI-Dienst Ollama", "update"),
     "updTreiberBtn": ("Treiber & Kernel", "update"),
+}
+
+# Namen, die es als eigene Kachel nicht mehr gibt, die Klaus aber weiter sagt:
+# seit 25.09.2026 stehen sie als ZEILEN im KI Profil. Vorher standen sie noch
+# oben im Katalog - "oeffne Tagebuch" meldete "wird geoeffnet", und nichts
+# passierte (Fenster-Durchgang 28.09.2026). Name -> Bereich, der aufgeht.
+BEREICH_UMLEITUNG = {
+    "Selbst": "KI Profil",
+    "Tagebuch": "KI Profil",
+    "Erfahrungs-Log": "KI Profil",
+    "Gedächtnis": "KI Profil",
+    "Kurzzeitgedächtnis": "KI Profil",
+    "Langzeitgedächtnis": "KI Profil",
 }
 
 # bereiche_oeffnen bekommt ALLE echten Bereichsnamen automatisch als
@@ -777,6 +784,8 @@ def _stichwoerter_berechnen():
     for anzeige, _eltern in PORTAL_BEREICHE.values():
         woerter |= _namensformen(anzeige)
     for anzeige in PORTAL_FENSTER.values():
+        woerter |= _namensformen(anzeige)
+    for anzeige in BEREICH_UMLEITUNG:
         woerter |= _namensformen(anzeige)
     FAEHIGKEITEN["bereiche_oeffnen"]["stichwoerter"] = sorted(woerter)
 

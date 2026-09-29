@@ -34,6 +34,7 @@ import ctypes
 import traceback
 import time
 import os
+import re
 
 _NVIDIA_DIR = os.path.join(os.path.dirname(__file__), "venv", "lib", "python3.12", "site-packages", "nvidia")
 for _lib in ("cublas/lib/libcublasLt.so.12", "cublas/lib/libcublas.so.12", "cudnn/lib/libcudnn.so.9"):
@@ -61,6 +62,34 @@ ABTASTRATE = 16000
 # Grafikspeicher und ein paar Zehntelsekunden. "medium" liegt weiter im
 # Zwischenspeicher, das Zurueckstellen ist diese eine Zeile.
 MODELL_GROESSE = "large-v3"
+
+# Hoerhinweis: Woerter, die Whisper ohne Hinweis falsch schreibt. Gemessen am
+# 28.09.2026 (ki-pruefstand/ergebnisse/hoertest_2026-09-28/ auf der Zentrale):
+# Klaus' Verhoerer-Saetze 4 -> 7 von 8 richtig ("online Kai", "Pidum-Programm",
+# "Fenstergemini", "Schattenfenster"), 50 Standardbefehle 42 -> 44
+# ("Wandebrett" -> Thunderbird), Klaus' echte 9-Minuten-Aufnahme vom 14.09.:
+# 3 Stellen besser, keine schlechter. Nur Woerter aufnehmen, die nachweislich
+# verhoert werden - jedes Wort zieht Whisper leicht in seine Richtung.
+# Whisper klebt Befehlswort und Fenster gern zusammen: "Schließefenster, Linux,
+# Python" (Klaus-Probe 28.09.2026, 03:00). Das Modell hat daraus "groß machen"
+# statt "schließen" gemacht. Deshalb vor allem anderen wieder trennen - nur
+# genau diese Verb+Nomen-Paare, damit echte Wörter wie "Fensterbank" oder
+# "Schließfach" unberührt bleiben.
+_KLEBE_VERBEN = r"(schlie(?:ß|ss)e?|öffne|oeffne|maximiere|minimiere|zeige)"
+_KLEBE_NOMEN = r"(fenster|thema|bereich)"
+_KLEBE_MUSTER = re.compile(r"\b" + _KLEBE_VERBEN + _KLEBE_NOMEN + r"\b", re.IGNORECASE)
+
+
+def klebewoerter_trennen(text):
+    """'Schließefenster' -> 'Schließe Fenster'. Alles andere bleibt, wie es ist."""
+    def trennen(m):
+        nomen = m.group(2)
+        return m.group(1) + " " + nomen[:1].upper() + nomen[1:]
+    return _KLEBE_MUSTER.sub(trennen, text or "")
+
+
+HOERWOERTER = ["Online KI", "Gemini", "Python", "Firefox", "Thunderbird", "Chatfenster",
+               "maximiere", "minimiere"]
 
 _modell = None
 _modell_lock = threading.Lock()
@@ -104,7 +133,7 @@ def erkennen(datei):
         # Uhr") und verlor seinen Hinweis, als das Codewort aenderbar wurde
         # und Klaus es auf "Computer" stellte - seitdem verstand sie
         # ausgerechnet den eigenen Namen nicht mehr (Klaus-Fund 2026-09-01).
-        namen = ["Milcrid", codewort_verwaltung.codewort_text()]
+        namen = ["Milcrid", codewort_verwaltung.codewort_text()] + HOERWOERTER
         codewort = ", ".join(dict.fromkeys(n for n in namen if n))
         # _modell_lock haelt auch waehrend transcribe(): zwei GLEICHZEITIGE
         # Aufrufe auf demselben Modell fuehrten zu sporadischem "nichts
@@ -137,7 +166,10 @@ def erkennen(datei):
             # musste oefter zweimal angesprochen werden (Klaus, 06.09.).
             if not text:
                 _lausch_log("Whisper lieferte keinen Text")
-        return text
+        getrennt = klebewoerter_trennen(text)
+        if getrennt != text:
+            _lausch_log(f"GETRENNT: {text!r} -> {getrennt!r}")
+        return getrennt
     except Exception:
         # Frueher wurde hier JEDE Ausnahme still zu "nichts verstanden".
         # Genau das hat am 30.08. den cuBLAS-Ladefehler wochenlang als

@@ -374,12 +374,16 @@ def _erlaubte_woerter(label, eintrag):
 # ("schliesse E-Mail" zerfaellt in "e" + "mail").
 _MIN_AEHNLICH = 4      # kuerzestes Wort, das als Teilwort/Klang zaehlen darf
 _EGAL_BIS = 2          # so kurze Satzwoerter schliessen nie aus
+# ... ausser diesen: "KI" unterscheidet Bereiche ("KI Profil" gegen "Profil Manager",
+# "Lokale KI", "API KI"). Ohne das traf "oeffne KI Profil" den Eintrag "oeffne profil
+# manager" als eindeutig und oeffnete den Profil Manager (Fenster-Durchgang 28.09.2026).
+_KURZ_ABER_WICHTIG = {"ki"}
 
 
 def _fremdes_wort(satz_woerter, erlaubt, aktionswoerter):
     """Das erste Wort im Satz, das dieser Eintrag nicht kennt - sonst None."""
     for w in satz_woerter:
-        if w in aktionswoerter or w in _ZUSATZ_DURCHLASS or len(w) <= _EGAL_BIS:
+        if w in aktionswoerter or w in _ZUSATZ_DURCHLASS or (len(w) <= _EGAL_BIS and w not in _KURZ_ABER_WICHTIG):
             continue
         if w in erlaubt:
             continue

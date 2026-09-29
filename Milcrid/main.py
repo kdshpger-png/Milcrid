@@ -406,6 +406,24 @@ def main():
 # =============================================================================
 
 
+
+FENSTER_WERKZEUGE = ("close_window", "minimize_window", "maximize_window")
+
+
+def merkliste_fenster_nicht_offen(merkliste):
+    """True, wenn ein eindeutiger Merklisten-Treffer ein bestimmtes Fenster
+    schliessen/verkleinern/vergroessern will, das sicher nicht offen ist."""
+    if merkliste.get("art") != "eindeutig" or merkliste.get("werkzeug") not in FENSTER_WERKZEUGE:
+        return False
+    m = re.search(r'name="([^"]*)"', merkliste.get("arg_string", ""))
+    if not m:
+        return False
+    try:
+        return bool(bridge._nicht_offen_meldung(m.group(1)))
+    except Exception:
+        return False
+
+
 class PortalSitzung:
     """Eine laufende Milcrid-Unterhaltung fuer das Portal. Haelt Verlauf,
     Think-Zustand und geladene Profile - wie die Terminal-Schleife, nur ohne
@@ -774,6 +792,43 @@ class PortalSitzung:
             self.letzte_ergebnisse = [ergebnis]
             return " ".join(str(ergebnis or "").split())
 
+        # "oeffne Handbuch Tastatur" (Klaus 29.09.2026): fest abgefangen, siehe
+        # bridge.handbuch_kapitel_befehl - das Modell streute zwischen drei Werkzeugen
+        # und oeffnete einmal zusaetzlich alle Themen.
+        if bridge.handbuch_kapitel_befehl(frage_original):
+            mitschrift.notiz("abgefangen", sitzung=self.sitzung_id,
+                             wovon="Handbuch-Kapitel", text=frage_original)
+            if on_tool_start:
+                on_tool_start("open_app")
+            bridge.eingabe_merken(frage_original)
+            ergebnis = bridge.werkzeug_direkt_ausfuehren("open_app", 'name="Milcrid Handbuch"')
+            self.letzte_ergebnisse = [ergebnis]
+            satz = bridge._SATZ_VORGABE.findall(str(ergebnis or ""))
+            return satz[-1] if satz else " ".join(str(ergebnis or "").split())
+
+        # "Hintergrundbild Sonne" (Klaus 29.09.2026): fest abgefangen, siehe
+        # bridge.hintergrund_befehl - nur bei einem vorhandenen Hintergrundnamen.
+        _hg_satz = bridge.hintergrund_befehl(frage_original)
+        if _hg_satz:
+            mitschrift.notiz("abgefangen", sitzung=self.sitzung_id,
+                             wovon="Hintergrund", text=frage_original)
+            self.letzte_ergebnisse = [_hg_satz]
+            return _hg_satz
+
+        # "oeffne <Portal-Bereich>" (29.09.2026): fest abgefangen, siehe
+        # bridge.bereich_befehl - das Modell griff bei diesen Saetzen in 14 %
+        # daneben oder rief gar nichts auf.
+        _bereich = bridge.bereich_befehl(frage_original)
+        if _bereich:
+            mitschrift.notiz("abgefangen", sitzung=self.sitzung_id,
+                             wovon="Portal-Bereich", text=frage_original)
+            if on_tool_start:
+                on_tool_start("open_section")
+            bridge.eingabe_merken(frage_original)
+            ergebnis = bridge.werkzeug_direkt_ausfuehren("open_section", f'name="{_bereich}"')
+            self.letzte_ergebnisse = [ergebnis]
+            return " ".join(str(ergebnis or "").split())
+
         # Direkt-Merkliste pruefen, BEVOR das Modell ueberhaupt gefragt wird
         # (Klaus-Idee 2026-09-04): eine Liste durchsuchen ist so gut wie
         # verzoegerungsfrei, das Modell nachdenken lassen dauert spuerbar -
@@ -814,6 +869,16 @@ class PortalSitzung:
         # Merkliste-Satz darf das abkuerzen (die Beschreibung koennte zufaellig
         # wie "oeffne ..." klingen).
         if self._bilder and merkliste["art"] != "keine":
+            merkliste = {"art": "keine"}
+        # Ein gelernter Eintrag mit festem Fensternamen darf nicht gewinnen, wenn
+        # dieses Fenster gar nicht offen ist (Klaus-Probe 28.09.2026, 03:00:
+        # "schliesse Linux" traf "schliesse Suche Linux" mit 0.667 -> "kein
+        # Fenster 'Suche: Linux' offen", obwohl "Linux Python" offen war). Dann
+        # entscheidet das Modell mit den wirklich offenen Fenstern.
+        if merkliste_fenster_nicht_offen(merkliste):
+            mitschrift.notiz("merkliste_verworfen", sitzung=self.sitzung_id,
+                             werkzeug=merkliste.get("werkzeug", ""), args=merkliste.get("arg_string", ""),
+                             grund="Fenster nicht offen")
             merkliste = {"art": "keine"}
         if merkliste["art"] == "eindeutig":
             if on_tool_start:
@@ -1703,6 +1768,29 @@ def portal_server(host="127.0.0.1", port=8765):
                         ergebnis = await asyncio.to_thread(theme_verwaltung.info)
                     antwort = {"typ": "theme_antwort", "aktion": typ, **ergebnis}
                     await ws.send(json.dumps(antwort))
+                    continue
+
+                # ---- Einstellungen > Hintergrund: eigene Bilder (Klaus-Wunsch
+                # 29.09.2026) - Bilder auf dem PC zeigen, eins in die Sammlung
+                # kopieren, eins entfernen. Siehe theme_verwaltung.py. ----
+                if typ in ("hintergrund_pc_bilder", "hintergrund_hinzufuegen", "hintergrund_entfernen",
+                           "hintergrund_umbenennen", "hintergrund_abdunkeln_speichern"):
+                    if typ == "hintergrund_umbenennen":
+                        ergebnis = await asyncio.to_thread(
+                            theme_verwaltung.hintergrund_umbenennen, data.get("name", ""), data.get("neu", ""))
+                    elif typ == "hintergrund_abdunkeln_speichern":
+                        ergebnis = await asyncio.to_thread(
+                            theme_verwaltung.abdunkeln_speichern, data.get("wert", ""), data.get("stufe"))
+                    elif typ == "hintergrund_pc_bilder":
+                        ergebnis = {"erfolg": True,
+                                    "bilder": await asyncio.to_thread(theme_verwaltung.bilder_auf_dem_pc)}
+                    elif typ == "hintergrund_hinzufuegen":
+                        ergebnis = await asyncio.to_thread(
+                            theme_verwaltung.hintergrund_hinzufuegen, data.get("pfad", ""))
+                    else:
+                        ergebnis = await asyncio.to_thread(
+                            theme_verwaltung.hintergrund_entfernen, data.get("name", ""))
+                    await ws.send(json.dumps({"typ": "hintergrund_antwort", "aktion": typ, **ergebnis}))
                     continue
 
                 # ---- Lokale KI > Faehigkeiten > "Wie darf die KI mithoeren":

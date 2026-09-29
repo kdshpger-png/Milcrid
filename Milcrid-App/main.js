@@ -2444,7 +2444,12 @@ ipcMain.handle('fenster-aktion-extern', (event, name, aktion) => {
             execFile('wmctrl', ['-i', '-r', id, '-b', 'add,maximized_vert,maximized_horz'], () => fertig());
           });
         } else if (aktion === 'normalgroesse') {
-          execFile('wmctrl', ['-i', '-r', id, '-b', 'remove,maximized_vert,maximized_horz'], () => fertig());
+          // Wie beim Maximieren erst zurueckholen: "mach Thunderbird wieder normal"
+          // bei minimiertem Fenster nahm nur das Vollbild weg, das Fenster blieb
+          // unsichtbar (Fenster-Durchgang 28.09.2026).
+          execFile('wmctrl', ['-i', '-a', id], () => {
+            execFile('wmctrl', ['-i', '-r', id, '-b', 'remove,maximized_vert,maximized_horz'], () => fertig());
+          });
         } else if (aktion === 'schliessen') {
           execFile('wmctrl', ['-i', '-c', id], () => fertig());
         } else fertig();

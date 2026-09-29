@@ -331,6 +331,17 @@
     "werkzeug": "close_app",
     "zuletzt": ""
   },
+  "schließe_handbuch": {
+    "anzahl": 0,
+    "arg_string": "name=\"Milcrid Handbuch\"",
+    "formulierungen": [
+      "schließe Handbuch",
+      "Handbuch schließen",
+      "mach das Handbuch zu"
+    ],
+    "werkzeug": "close_window",
+    "zuletzt": ""
+  },
   "schließe_ip_wächter": {
     "anzahl": 0,
     "arg_string": "name=\"IP-Wächter\"",
@@ -720,6 +731,16 @@
       "zeig ipwächter"
     ],
     "werkzeug": "open_app",
+    "zuletzt": ""
+  },
+  "öffne_ki_profil": {
+    "anzahl": 0,
+    "arg_string": "name=\"KI Profil\"",
+    "formulierungen": [
+      "öffne KI Profil",
+      "KI Profil öffnen"
+    ],
+    "werkzeug": "open_section",
     "zuletzt": ""
   },
   "öffne_kitty": {

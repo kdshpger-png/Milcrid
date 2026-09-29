@@ -112,8 +112,10 @@ unclutter &
 openbox &
 # xdg-desktop-portal startet ohne volle Desktop-Sitzung nicht von selbst -
 # ohne ihn oeffnen Flatpak-Programme nie ein Fenster.
-/usr/libexec/xdg-desktop-portal-gtk &
-/usr/libexec/xdg-desktop-portal &
+# setpriv: OHNE die vom Kiosk-Dienst geerbte Capability starten - sonst kann
+# Firefox (Snap) nichts speichern ("Speichern unter" verpufft still).
+setpriv --ambient-caps=-all --inh-caps=-all -- /usr/libexec/xdg-desktop-portal-gtk &
+setpriv --ambient-caps=-all --inh-caps=-all -- /usr/libexec/xdg-desktop-portal &
 sleep 1
 # Ein main.py aus einer frueheren Sitzung haengt an der Anmeldesitzung, nicht am
 # Kiosk-Dienst, und ueberlebt dessen Neustart - samt Grafikspeicher und altem Code.

@@ -152,7 +152,27 @@
   suche.addEventListener('input', filtern);
   suche.addEventListener('keydown', ev => { if (ev.key === 'Escape'){ suche.value = ''; filtern(); } });
 
-  // Von aussen: ein bestimmtes Kapitel zeigen (z. B. spaeter "oeffne Handbuch Tastatur").
-  window.milcridHandbuch = { zeigen: id => springen(id.startsWith('hb-') ? id : 'hb-' + id) };
+  // Von aussen: ein bestimmtes Kapitel zeigen ("oeffne Handbuch Tastatur", seit 29.09.2026
+  // ueber bridge.open_app -> Portal). Beim ersten Oeffnen liegt das Kapitel schon bereit,
+  // bevor dieses Skript laeuft - dann hier abholen, sobald das Fenster steht.
+  // Seit 29.09. auch die Sprache ("oeffne Handbuch auf Englisch"). Die Kapitel-Kennungen gibt
+  // es nur im deutschen Text (der englische ist anders gegliedert) - steht gerade Englisch,
+  // wird fuer einen Kapitelsprung erst auf Deutsch umgestellt.
+  async function vonAussen(auftrag){
+    if (!auftrag) return;
+    if (typeof auftrag === 'string') auftrag = { kapitel: auftrag };
+    if (auftrag.sprache) await spracheWechseln(auftrag.sprache);
+    if (auftrag.kapitel){
+      const id = auftrag.kapitel.startsWith('hb-') ? auftrag.kapitel : 'hb-' + auftrag.kapitel;
+      if (!document.getElementById(id) && sprache !== 'de') await spracheWechseln('de');
+      springen(id);
+    }
+  }
+  window.milcridHandbuch = { zeigen: kapitel => vonAussen({ kapitel }), auftrag: vonAussen };
   markieren();
+  const wartend = (window.milcridOeffnenWartend || {}).handbuch;
+  if (wartend){
+    delete window.milcridOeffnenWartend.handbuch;
+    setTimeout(() => vonAussen(wartend), 300);
+  }
 })();

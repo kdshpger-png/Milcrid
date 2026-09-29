@@ -84,11 +84,45 @@
      Code spielt dadurch keine Rolle. */
   .portal.bg-milcrid{
     background:
-      linear-gradient(rgba(6,20,38,.6), rgba(6,20,38,.6)),
+      linear-gradient(rgba(6,20,38,var(--hg-dunkel,.6)), rgba(6,20,38,var(--hg-dunkel,.6))),
       url('milcrid-splash.jpg');
     background-size:cover;
     background-position:center;
   }
+
+  /* ---- Einstellungen > Hintergrund: eigenes Bild (29.09.2026) - gleiche
+     Abdunkelung wie beim Milcrid-Bild, das Bild kommt als Variable. */
+  .portal.bg-bild{
+    /* Staerke der Abdunkelung je Bild, Regler unter der Reihe (29.09.2026) */
+    background:
+      linear-gradient(rgba(6,20,38,var(--hg-dunkel,.15)), rgba(6,20,38,var(--hg-dunkel,.15))),
+      var(--hg-bild);
+    background-size:cover;
+    background-position:center;
+  }
+  .hg-reihe, .hg-auswahl{display:flex; flex-wrap:wrap; gap:16px; justify-content:center}
+  .hg-auswahl{max-height:440px; overflow:auto; padding:18px 8px 8px; border-top:1px solid var(--surface-line)}
+  .hg-auswahl[hidden]{display:none}
+  .hg-bild{width:176px; padding:0; border:none; background:none; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:6px; color:var(--muted); font-size:12px}
+  .hg-vorschau{width:176px; height:99px; border-radius:10px; overflow:hidden; box-sizing:border-box;
+    border:2px solid var(--surface-line); display:flex; align-items:center; justify-content:center}
+  .hg-vorschau img{width:100%; height:100%; object-fit:cover; display:block}
+  .hg-bild:hover .hg-vorschau{border-color:rgba(216,177,84,.55)}
+  .hg-bild.aktiv .hg-vorschau{border-color:var(--gold); box-shadow:0 0 0 1px var(--gold)}
+  .hg-bild.aktiv .hg-name{color:var(--gold)}
+  .hg-name{max-width:176px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .hg-standard .hg-vorschau{background:
+      radial-gradient(90% 70% at 50% 6%, rgba(var(--accent-rgb),.22), transparent 60%),
+      linear-gradient(180deg,var(--panel),var(--bg))}
+  .hg-plus .hg-vorschau{border-style:dashed; color:var(--gold); font-size:36px; font-weight:300}
+  .hg-hinweis{color:var(--muted); font-size:13px; padding:10px}
+  .hg-dunkel{justify-content:center; margin-top:6px}
+  .hg-dunkel[hidden]{display:none}
+  .hg-dunkel input[type=range]{width:280px; accent-color:var(--gold)}
+  .hg-dunkel .settingrow-label{min-width:140px; text-align:right}
+  .hg-name-feld{width:170px; font:inherit; font-size:12px; text-align:center; color:var(--text);
+    background:rgba(0,0,0,.25); border:1px solid var(--gold); border-radius:6px; padding:2px 4px}
 
   /* ---- Uhr-Symbol (eingeklappte Uhr) ---- */
   .clocksym{
@@ -2255,14 +2289,6 @@
     padding:0 7px; border-radius:11px;
     font-size:10px;
   }
-  /* Wortbeschriftungen ("Standard"/"Milcrid") brauchen mehr Platz als die
-     kurzen Prozentwerte oben - gleiche Idee wie bei #appGroessePicker,
-     nur grosszuegiger bemessen. */
-  #hintergrundPicker button{
-    width:auto; min-width:64px; height:24px;
-    padding:0 12px; border-radius:12px;
-    font-family:var(--sans); font-size:11px;
-  }
   /* Seiten-Buttons-Anzahl: waagrechte, umbrechende Reihe (Klaus-Wunsch
      2026-08-17 - vorher senkrecht, war bei 15+21 Zahlen zu lang) - waehlt
      die GESAMT-Zielzahl je Seite direkt (7 = Original), statt schrittweise
@@ -3317,7 +3343,7 @@
       </div>
       <div id="view-einstellungen" hidden>
         <div class="settingtiles settingtiles--reihe" data-sort-key="portal">
-          <button class="hub-zeile" id="schriftBtn" title="Schrift" draggable="true" data-parent-id="einstellungen">
+          <button class="hub-zeile" id="schriftBtn" title="Schrift" style="margin-top:16px" draggable="true" data-parent-id="einstellungen">
             <span class="hub-icon">🔤</span>
             <span class="hub-box"><span class="hub-name">Schrift</span></span>
           </button>
@@ -3419,14 +3445,16 @@
             <span class="hub-icon">🖼️</span>
             <span class="hub-box"><span class="hub-name">Hintergrund</span></span>
           </button>
+          <!-- Seit 29.09.2026 Vorschaubilder statt zwei Text-Knoepfen, dazu eigene
+               Bilder vom PC (Klaus: "Bilder sehen, kleine Ansicht wie jetzt Milcrid").
+               Die Reihe baut hintergrundReiheBauen() im Skript. -->
           <div class="settinggroup" id="hintergrundGroup" hidden>
-            <div class="settingrow">
-              <span class="settingrow-label">Hintergrundbild</span>
-              <div class="ae-picker" id="hintergrundPicker">
-                <button data-wert="standard" class="active" title="Farbverlauf (Standard)">Standard</button>
-                <button data-wert="milcrid" title="Milcrid-Bild">Milcrid</button>
-              </div>
+            <div class="hg-reihe" id="hintergrundReihe"></div>
+            <div class="settingrow hg-dunkel" id="hintergrundDunkelZeile" hidden>
+              <span class="settingrow-label" id="hintergrundDunkelLabel">Abdunkeln: 15 %</span>
+              <input type="range" id="hintergrundDunkelRegler" min="0" max="70" step="1" value="15">
             </div>
+            <div class="hg-auswahl" id="hintergrundAuswahl" hidden></div>
           </div>
           <!-- Klaus-Wunsch 2026-09-24: festlegen, welche Datei mit welchem
                Programm aufgeht ("wie heute fast ueberall - PDF = Firefox,
@@ -4892,6 +4920,7 @@
       if (aktion === 'schliessen') mwFensterSchliessen(id);
       else if (aktion === 'maximieren') mwFensterMaximieren(id, true);
       else if (aktion === 'normalgroesse') mwFensterMaximieren(id, false);
+      else if (aktion === 'vorne') mwFensterNachVorne(id);   // holt auch Minimiertes zurueck (28.09.2026)
       else mwFensterMinimieren(id);
     });
     return ids.length;
@@ -6310,29 +6339,161 @@
      (Farbverlauf) oder "Milcrid" (Start-Logo-Bild als Hintergrund) - siehe
      .portal.bg-milcrid und theme_verwaltung.hintergrund_speichern. ---- */
   const hintergrundGroup = document.getElementById('hintergrundGroup');
-  const hintergrundPicker = document.getElementById('hintergrundPicker');
+  const hintergrundReihe = document.getElementById('hintergrundReihe');
+  const hintergrundAuswahl = document.getElementById('hintergrundAuswahl');
   hintergrundBtn.addEventListener('click', () => {
     const oeffnen = hintergrundGroup.hidden;
     andereEinstellungsgruppenSchliessen(hintergrundGroup);
     hintergrundGroup.hidden = !oeffnen;
+    hintergrundAuswahl.hidden = true;
     einstellungsKachelnZeigen(hintergrundGroup);
     portalKachelnAusserAusblenden(oeffnen, hintergrundBtn);
     panelBack.hidden = false;
     panelTitle.textContent = hintergrundGroup.hidden ? PANEL_NAMEN['einstellungen'] : 'Hintergrund';
   });
-  function hintergrundSetzen(wert){
-    portal.classList.toggle('bg-milcrid', wert === 'milcrid');
-    hintergrundPicker.querySelectorAll('button').forEach(b =>
-      b.classList.toggle('active', b.dataset.wert === wert));
+
+  /* Eigene Bilder (Klaus-Wunsch 29.09.2026): Reihe aus Vorschaubildern -
+     Standard, Milcrid, dann die eigene Sammlung (theme_verwaltung.hintergrund_bilder,
+     zuletzt hinzugefuegte zuerst) und "+". Das "+" zeigt darunter alle Bilder auf
+     dem PC (Bilder, Downloads, Schreibtisch, Dokumente); ein Klick kopiert das Bild
+     in die Sammlung und macht es zum Hintergrund. Rechtsklick auf ein eigenes Bild:
+     Entfernen (Milcrid-Papierkorb). */
+  let hintergrundWert = 'standard';
+  let hintergrundEigene = [];      // [{name, pfad}]
+  let hintergrundAbdunkeln = {};   // Wert -> Stufe 0..0.7 (theme_verwaltung.abdunkeln_speichern)
+  const hintergrundDunkelZeile = document.getElementById('hintergrundDunkelZeile');
+  const hintergrundDunkelRegler = document.getElementById('hintergrundDunkelRegler');
+  const hintergrundDunkelLabel = document.getElementById('hintergrundDunkelLabel');
+  // Milcrid-Bild behaelt seine gewohnten 60 %, eigene Bilder fangen bei 15 % an.
+  const hgStufe = wert => (wert in hintergrundAbdunkeln) ? hintergrundAbdunkeln[wert]
+                                                          : (wert === 'milcrid' ? 0.6 : 0.15);
+  function hgDunkelZeigen(stufe){
+    portal.style.setProperty('--hg-dunkel', stufe);
+    hintergrundDunkelLabel.textContent = 'Abdunkeln: ' + Math.round(stufe * 100) + ' %';
   }
-  hintergrundPicker.addEventListener('click', e => {
-    const b = e.target.closest('button');
-    if (!b) return;
-    hintergrundSetzen(b.dataset.wert);
-    if (ws && ws.readyState === 1){
-      ws.send(JSON.stringify({ typ: 'theme_hintergrund_speichern', wert: b.dataset.wert }));
-    }
+  hintergrundDunkelRegler.addEventListener('input', () => hgDunkelZeigen(hintergrundDunkelRegler.value / 100));
+  hintergrundDunkelRegler.addEventListener('change', () => {
+    const stufe = hintergrundDunkelRegler.value / 100;
+    hintergrundAbdunkeln[hintergrundWert] = stufe;
+    hgSenden('hintergrund_abdunkeln_speichern', { wert: hintergrundWert, stufe });
   });
+  const hgDateiUrl = pfad => 'file://' + pfad.split('/').map(encodeURIComponent).join('/');
+  function hgSenden(typ, zusatz){   // gleiche Form wie nutzerprofilSenden - der Pruefstand erkennt sie
+    if (ws && ws.readyState === 1) ws.send(JSON.stringify(Object.assign({ typ }, zusatz || {})));
+  }
+  function hgKachel(titel, bildUrl, klasse){
+    const k = document.createElement('button');
+    k.className = 'hg-bild' + (klasse ? ' ' + klasse : '');
+    k.title = titel;
+    const v = document.createElement('div');
+    v.className = 'hg-vorschau';
+    if (bildUrl){
+      const img = document.createElement('img');
+      img.src = bildUrl; img.alt = ''; img.loading = 'lazy'; img.decoding = 'async';
+      v.append(img);
+    }
+    const n = document.createElement('span');
+    n.className = 'hg-name';
+    n.textContent = titel;
+    k.append(v, n);
+    return k;
+  }
+  function hintergrundSetzen(wert){
+    const eigen = String(wert).startsWith('bild:')
+      ? hintergrundEigene.find(b => 'bild:' + b.name === wert) : null;
+    hintergrundWert = (wert === 'milcrid' || eigen) ? wert : 'standard';
+    portal.classList.toggle('bg-milcrid', hintergrundWert === 'milcrid');
+    portal.classList.toggle('bg-bild', !!eigen);
+    if (eigen) portal.style.setProperty('--hg-bild', 'url("' + hgDateiUrl(eigen.pfad) + '")');
+    hintergrundDunkelZeile.hidden = hintergrundWert === 'standard';
+    const stufe = hgStufe(hintergrundWert);
+    hintergrundDunkelRegler.value = Math.round(stufe * 100);
+    hgDunkelZeigen(stufe);
+    hintergrundReiheBauen();
+  }
+  function hintergrundReiheBauen(){
+    hintergrundReihe.innerHTML = '';
+    const eintraege = [
+      { wert: 'standard', titel: 'Standard', klasse: 'hg-standard' },
+      { wert: 'milcrid', titel: 'Milcrid', url: 'milcrid-splash.jpg' },
+      ...hintergrundEigene.map(b => ({ wert: 'bild:' + b.name, titel: b.name.replace(/\.[^.]+$/, ''),
+                                       url: hgDateiUrl(b.pfad), name: b.name })),
+    ];
+    eintraege.forEach(e => {
+      const k = hgKachel(e.titel, e.url, e.klasse);
+      if (e.wert === hintergrundWert) k.classList.add('aktiv');
+      k.addEventListener('click', () => {
+        hintergrundSetzen(e.wert);
+        hgSenden('theme_hintergrund_speichern', { wert: e.wert });
+      });
+      if (e.name) k.addEventListener('contextmenu', ev => {
+        ev.preventDefault(); ev.stopPropagation();
+        tileMenuOeffnen(ev.clientX, ev.clientY, [
+          { label: 'Umbenennen', aktion: () => hgUmbenennen(k, e) },
+          { label: 'Entfernen', aktion: () => hgSenden('hintergrund_entfernen', { name: e.name }) }]);
+      });
+      hintergrundReihe.append(k);
+    });
+    const plus = hgKachel('Bild hinzufügen', null, 'hg-plus');
+    plus.querySelector('.hg-vorschau').textContent = '+';
+    plus.addEventListener('click', () => {
+      if (!hintergrundAuswahl.hidden){ hintergrundAuswahl.hidden = true; return; }
+      hintergrundAuswahl.hidden = false;
+      hintergrundAuswahl.innerHTML = '<div class="hg-hinweis">Bilder werden gesucht …</div>';
+      hgSenden('hintergrund_pc_bilder');
+    });
+    hintergrundReihe.append(plus);
+  }
+  // Umbenennen direkt unter dem Bild: Enter speichert, Esc oder Wegklicken bricht ab.
+  // (Kein prompt() - das gibt es in Electron nicht.)
+  function hgUmbenennen(kachel, e){
+    const alt = kachel.querySelector('.hg-name');
+    const feld = document.createElement('input');
+    feld.className = 'hg-name-feld';
+    feld.value = e.titel;
+    feld.maxLength = 60;
+    alt.replaceWith(feld);
+    feld.focus(); feld.select();
+    let fertig = false;
+    const ende = speichern => {
+      if (fertig) return; fertig = true;
+      const neu = feld.value.trim();
+      if (speichern && neu && neu !== e.titel) hgSenden('hintergrund_umbenennen', { name: e.name, neu });
+      else hintergrundReiheBauen();
+    };
+    feld.addEventListener('keydown', ev => {
+      ev.stopPropagation();
+      if (ev.key === 'Enter') ende(true);
+      else if (ev.key === 'Escape') ende(false);
+    });
+    feld.addEventListener('click', ev => ev.stopPropagation());
+    feld.addEventListener('blur', () => ende(false));
+  }
+  function hintergrundAntwort(m){
+    if (!m.erfolg){ portalMeldung(m.fehler || 'Das hat nicht geklappt.', 'fehler'); hintergrundReiheBauen(); return; }
+    if (m.aktion === 'hintergrund_abdunkeln_speichern'){
+      hintergrundAbdunkeln = m.abdunkeln || hintergrundAbdunkeln;
+      return;
+    }
+    if (m.aktion === 'hintergrund_pc_bilder'){
+      hintergrundAuswahl.innerHTML = '';
+      if (!(m.bilder || []).length){
+        hintergrundAuswahl.innerHTML = '<div class="hg-hinweis">Keine Bilder in Bilder, Downloads, Schreibtisch oder Dokumente.</div>';
+        return;
+      }
+      m.bilder.forEach(b => {
+        const k = hgKachel(b.name, hgDateiUrl(b.pfad));
+        k.title = b.ordner + '/' + b.name;
+        k.addEventListener('click', () => hgSenden('hintergrund_hinzufuegen', { pfad: b.pfad }));
+        hintergrundAuswahl.append(k);
+      });
+    } else {
+      hintergrundEigene = m.hintergrund_bilder || [];
+      if (m.abdunkeln) hintergrundAbdunkeln = m.abdunkeln;
+      hintergrundAuswahl.hidden = true;
+      hintergrundSetzen(m.aktion === 'hintergrund_hinzufuegen' ? m.wert : m.hintergrund);
+    }
+  }
 
   /* ---- Einstellungen > Buttons: waehlt die GESAMT-Zielzahl an Seiten-
      Buttons je Seite direkt (1 bis 15, Original ist 8 - Klaus-Wunsch
@@ -7888,7 +8049,7 @@
     ['updMilcridBtn', 'updMilcridGroup', 'Milcrid Update'],
     ['updLinuxBtn', 'updLinuxGroup', 'Linux System'],
     ['updProgrammeBtn', 'updProgrammeGroup', 'Programme'],
-    ['updKiBtn', 'updKiGroup', 'KI'],
+    ['updKiBtn', 'updKiGroup', 'KI-Dienst Ollama'],  // Titel = Kachelname (28.09.2026), sonst trifft 'maximiere KI-Dienst Ollama' nicht
     ['updTreiberBtn', 'updTreiberGroup', 'Treiber & Kernel'],
   ];
   const UPDATE_KACHEL_KNOEPFE = UPD_KACHELN.map(([b]) => document.getElementById(b));
@@ -9072,6 +9233,11 @@
     const btn = document.createElement('button');
     btn.className = 'hub-zeile';
     btn.title = kategorie;
+    // Feste Kennung + Eltern (28.09.2026): ohne sie ueberging die Portal-Karte
+    // diese Kacheln, und "oeffne Netzwerk" / "oeffne WLAN" suchte ein Programm -
+    // fuer Milcrid gab es sie nicht (Klaus' Test 28.09. 22:32).
+    btn.id = 'sysKat' + kategorie.normalize('NFD').replace(/[^A-Za-z]/g, '');
+    btn.setAttribute('data-parent-id', 'system');
     const iconSpan = document.createElement('span');
     iconSpan.className = 'hub-icon';
     iconSpan.textContent = icon;
@@ -14469,6 +14635,8 @@
           setTimeout(() => { st.textContent = ''; st.className = 'mf-status woerter-status'; }, 6000);
         }
       }
+    } else if (m.typ === 'hintergrund_antwort') {
+      hintergrundAntwort(m);
     } else if (m.typ === 'theme_antwort') {
       // Gespeichertes Portal-Thema laden (siehe sock.onopen weiter unten,
       // wird gleich beim Verbindungsaufbau angefragt) - ueberschreibt den
@@ -14481,7 +14649,9 @@
         if (m.button_modus === 'grau') setButtonGrau();
         else if (m.button_modus === 'schwarz') setButtonSchwarz();
         else setButtonHue(typeof m.button_hue === 'number' ? m.button_hue : BLAU_HUE);
-        hintergrundSetzen(m.hintergrund === 'milcrid' ? 'milcrid' : 'standard');
+        hintergrundEigene = m.hintergrund_bilder || [];
+        hintergrundAbdunkeln = m.abdunkeln || {};
+        hintergrundSetzen(m.hintergrund || 'standard');
         schriftModusSetzen(m.schrift_modus, m.schrift_hue);
         goldModusSetzen(m.gold_modus, m.gold_hue);
         schriftartSetzen(typeof m.schriftart === 'string' ? m.schriftart : '');
@@ -14698,7 +14868,16 @@
           // derselbe Weg wie ein Klick auf ihre Kachel. Sie stehen in
           // apps.json unter "milcridApps" und haben kein exec, darum ein
           // eigener Aktionstyp statt app_oeffnen (siehe bridge.open_app).
+          // "oeffne Handbuch Tastatur" (29.09.2026): Kapitel mitgeben - ist das
+          // Handbuch noch nicht geladen, holt es sich das Kapitel beim Start ab.
+          // Seit 29.09. auch die Sprache ("oeffne Handbuch auf Englisch").
+          const hbAuftrag = a.id === 'handbuch' && (a.kapitel || a.sprache)
+            ? { kapitel: a.kapitel || null, sprache: a.sprache || null } : null;
+          if (hbAuftrag && !window.milcridHandbuch)
+            window.milcridOeffnenWartend.handbuch = hbAuftrag;
           milcridAppKachelKlick(a.id, a.name);
+          if (hbAuftrag && window.milcridHandbuch)
+            setTimeout(() => window.milcridHandbuch.auftrag(hbAuftrag), 150);
         } else if (a.typ === 'app_schliessen'){
           // Gleicher Weg wie "Schliessen" im Taskleisten-Rechtsklick-Menu
           // (siehe taskleisteMenuOeffnen) - main.py hat das passende
@@ -14711,6 +14890,16 @@
           if (a.auch_icons) alleSchliessen();
         } else if (a.typ === 'fenster_minimieren'){
           fensterAktion(a.name, 'minimieren');
+        } else if (a.typ === 'hintergrund_setzen'){
+          // "Hintergrundbild Sonne" (bridge.hintergrund_befehl, 29.09.2026) - gespeichert ist
+          // schon, hier nur anzeigen.
+          hintergrundEigene = a.bilder || hintergrundEigene;
+          hintergrundAbdunkeln = a.abdunkeln || hintergrundAbdunkeln;
+          hintergrundSetzen(a.wert);
+        } else if (a.typ === 'fenster_vorne'){
+          // open_section auf einen schon offenen Bereich: nicht erneut klicken
+          // (die Kachel wuerde zuklappen), nur nach vorn holen (28.09.2026).
+          mwFensterNachTitelAusfuehren(a.name, 'vorne');
         } else if (a.typ === 'fenster_anordnen'){
           if (a.art === 'nebeneinander') mwFensterNebeneinander(a.nur);
           else if (a.art === 'untereinander') mwFensterUntereinander(a.nur);
