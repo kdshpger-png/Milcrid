@@ -11,9 +11,11 @@ free for private, non-commercial use. **Use at your own risk** – please read t
 
 ## Steps
 1. Download `Milcrid-Setup-<version>.exe` (about 620 MB). **Your browser holds the file back** because this small
-   project is new: Edge says *“Milcrid-Setup-….exe isn't commonly downloaded”*. Open the download list (the arrow
-   at the top right, or type `edge://downloads`) and click **Keep**. Until you do, there is no file in your
-   Downloads folder – and if you close the browser first, the download is gone.
+   project is new: Edge says *“Milcrid-Setup-….exe isn't commonly downloaded”*. To keep it: open the download list
+   (the arrow at the top right, or type `edge://downloads`), move the mouse onto the entry, click the three dots
+   **…** and choose **Keep**. Edge then asks once more whether you trust the file: click the small arrow next to
+   **Delete** and choose **Keep anyway**. (In a German Edge: *Beibehalten*, then *Trotzdem beibehalten*.) Until you
+   do, there is no file in your Downloads folder – and if you close the browser first, the download is gone.
 2. Double-click the file. Windows may show **“Windows protected your PC”**, because this project has no paid signing
    certificate. Click **More info**, then **Run anyway**. (If you already clicked *Keep* in Edge, this step is
    usually skipped.)
@@ -35,6 +37,15 @@ free for private, non-commercial use. **Use at your own risk** – please read t
      the next start.
 6. After that the AI works without the internet. Open the **Milcrid Handbook** (button on the right) – or just say
    “open handbook”.
+
+## Updating to a newer version
+1. In Milcrid: **Portal › Update › Milcrid Update**, then **Look on GitHub for a new version**. Milcrid only looks
+   when you click. If a newer version is there, **Open the download page** takes you to it.
+2. Download the new `Milcrid-Setup-<version>.exe` – the browser holds it back as described in step 1 above.
+3. **Close Milcrid** (the X at the top right of its window), then run the installer. If Milcrid is still open, the
+   installer says so and changes nothing – close Milcrid and start the installer again.
+4. The installer suggests the folder of your installation; leave it as it is. It replaces the program and keeps
+   your data (appointments, notes, settings, the AI model).
 
 ## Two things Windows may ask later
 - **Windows Security: “Do you want to allow public and private networks to access this app? – Python”.** This can
