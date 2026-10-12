@@ -44,6 +44,8 @@ The step-by-step guide: **[INSTALL-WINDOWS.md](INSTALL-WINDOWS.md)**.
 - **Speak instead of typing:** microphone button or wake word ("Computer, open the clock")
 - **Its own apps:** clock, calculator, calendar, appointments, notes, editor, image viewer, video, sketch, trash
 - **File Manager and Topics** – your own collections of files and programs
+- **Windows settings inside Milcrid:** volume, microphone, network, display and more – change them right in the
+  Portal, or say "open the Windows settings for sound"
 - **Honest AI:** for anything that cannot be undone, Milcrid asks first
 - **Learning:** say "that was right", and next time Milcrid carries out that sentence immediately
 - **English and German**, switchable under Settings › Language
@@ -124,6 +126,8 @@ Die Anleitung Schritt für Schritt: **[INSTALL-WINDOWS.md](INSTALL-WINDOWS.md)**
 - **Sprechen statt tippen:** Mikrofon-Knopf oder Codewort („Computer, öffne die Uhr“)
 - **Eigene Apps:** Uhr, Rechner, Kalender, Termine, Notizen, Editor, Bildbetrachter, Video, Skizze, Papierkorb
 - **Datei Manager und Themen** – eigene Sammlungen aus Dateien und Programmen
+- **Windows-Einstellungen in Milcrid:** Lautstärke, Mikrofon, Netzwerk, Bildschirm und mehr – direkt im Portal
+  schalten, oder sag „öffne die Windows-Einstellungen für Sound“
 - **Ehrliche KI:** bei allem, was sich nicht rückgängig machen lässt, fragt Milcrid vorher
 - **Dazulernen:** sag „das war richtig“, und Milcrid führt diesen Satz beim nächsten Mal sofort aus
 - **Deutsch und Englisch**, umschaltbar unter Einstellungen › Sprache
