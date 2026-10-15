@@ -39,9 +39,20 @@ free for private, non-commercial use. **Use at your own risk** – please read t
    “open handbook”.
 
 ## Updating to a newer version
+**From version 0.3.5 on** – one click, no browser:
 1. In Milcrid: **Portal › Update › Milcrid Update**, then **Look on GitHub for a new version**. Milcrid only looks
-   when you click. If a newer version is there, **Open the download page** takes you to it.
-2. Download the new `Milcrid-Setup-<version>.exe` – the browser holds it back as described in step 1 above.
+   when you click. If a newer version is there, Milcrid shows what is new and what was fixed.
+2. Click **Install now**. If something in Milcrid is not saved yet (the text of the online AI, a drawing in Milcrid
+   Sketch, an appointment you are writing), Milcrid asks first. Other programs stay open – nothing is lost there.
+3. Milcrid downloads the new version, checks it against the checksum GitHub gives, closes itself and installs it.
+   A small window says "Milcrid is being updated"; after about a minute Milcrid starts again by itself. Your data
+   stays (appointments, notes, settings, the AI model).
+
+**Version 0.3.4 and older** – once more the way through the download page:
+1. In Milcrid: **Portal › Update › Milcrid Update**, then **Look on GitHub for a new version**. If a newer version is
+   there, **Open the download page** takes you to it.
+2. Download the new `Milcrid-Setup-<version>.exe` – the browser holds it back as described in step 1 above. After
+   "Keep", open the download list and click **Open file** – the browser does not start it by itself.
 3. **Close Milcrid** (the X at the top right of its window), then run the installer. If Milcrid is still open, the
    installer says so and changes nothing – close Milcrid and start the installer again.
 4. The installer suggests the folder of your installation; leave it as it is. It replaces the program and keeps
