@@ -43,6 +43,7 @@ The step-by-step guide: **[INSTALL-WINDOWS.md](INSTALL-WINDOWS.md)**.
   also for the windows of other programs
 - **Speak instead of typing:** microphone button or wake word ("Computer, open the clock")
 - **Its own apps:** clock, calculator, calendar, appointments, notes, editor, image viewer, video, sketch, trash
+- **Text size to suit you** – bigger or smaller for all windows (Settings › Size), or just for one window with A− / A+
 - **File Manager and Topics** – your own collections of files and programs
 - **Windows settings inside Milcrid:** volume, microphone, network, display and more – change them right in the
   Portal, or say "open the Windows settings for sound"
@@ -125,6 +126,7 @@ Die Anleitung Schritt für Schritt: **[INSTALL-WINDOWS.md](INSTALL-WINDOWS.md)**
   auch für Fenster anderer Programme
 - **Sprechen statt tippen:** Mikrofon-Knopf oder Codewort („Computer, öffne die Uhr“)
 - **Eigene Apps:** Uhr, Rechner, Kalender, Termine, Notizen, Editor, Bildbetrachter, Video, Skizze, Papierkorb
+- **Schrift so groß, wie du sie brauchst** – für alle Fenster (Einstellungen › Größe) oder nur für ein Fenster mit A− / A+
 - **Datei Manager und Themen** – eigene Sammlungen aus Dateien und Programmen
 - **Windows-Einstellungen in Milcrid:** Lautstärke, Mikrofon, Netzwerk, Bildschirm und mehr – direkt im Portal
   schalten, oder sag „öffne die Windows-Einstellungen für Sound“
